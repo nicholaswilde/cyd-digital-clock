@@ -20,10 +20,9 @@ A beautiful, configurable real-time weather station and desk clock built for the
   - **IP Geolocation Fallback**: Automatically falls back to resolving location via IP geolocation (using `ip-api.com`) on boot if Zip Code and coordinates are left blank.
   - **Reverse Geocoding**: When using coordinates + Open-Meteo, the city is resolved using Nominatim OSM. OWM resolves and returns the city name natively.
 - **3-Day Forecast View**: Swipe to a dedicated Forecast tab showing daily high/low temperature and weather condition icons.
-- **Swipe Navigation**: Swipe left/right anywhere on the screen to switch between the Current, Forecast, and Settings tabs.
-- **Dynamic Weather Icons**: A large (48px) custom weather glyph maps weather codes to condition icons, dynamically colored using the active Catppuccin palette.
-- **Interactive Settings Tab**: Touch-configurable settings persisted to flash across reboots:
-  - **Temperature Unit**: Toggle between Celsius (°C) and Fahrenheit (°F).
+- **Long-Press Settings Navigation**: Long press anywhere on the clock screen for 1.5 seconds to open the full-screen Settings menu with a dedicated back button.
+- **Interactive Settings**: Touch-configurable settings persisted to flash across reboots:
+  - **Time Format**: Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes.
   - **Catppuccin Theme Flavor**: Choose between Mocha, Macchiato, Frappé, or Latte — the full UI redraws instantly in the selected palette.
   - **Auto Brightness**: Toggle automatic backlight dimming/brightening driven by the onboard LDR light sensor (GPIO 34).
   - **Manual Brightness**: Slider to set a fixed screen brightness level (when Auto is off).
@@ -175,6 +174,7 @@ Example JSON response:
 ```json
 {
   "unit_system": 2,
+  "use_24hr_format": true,
   "brightness": 75,
   "auto_brightness": false,
   "timezone": "UTC0",
