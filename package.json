@@ -1,0 +1,12 @@
+{
+  "name": "cyd-digital-clock",
+  "version": "1.0.0",
+  "description": "ESP32 CYD Digital Clock",
+  "private": true,
+  "scripts": {
+    "font:generate": "echo 'No custom fonts to generate right now.'"
+  },
+  "devDependencies": {
+    "lv_font_conv": "^1.5.3"
+  }
+}
