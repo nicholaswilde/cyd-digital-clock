@@ -39,6 +39,7 @@ void test_settings_default_values(void) {
 #endif
     TEST_ASSERT_EQUAL_FLOAT(LOCAL_SENSOR_TEMP_OFFSET, settings.getLocalSensorTempOffset());
     TEST_ASSERT_EQUAL_FLOAT(LOCAL_SENSOR_HUM_OFFSET, settings.getLocalSensorHumOffset());
+    TEST_ASSERT_EQUAL(DEFAULT_USE_24HOUR_FORMAT, settings.getUse24HourFormat());
 }
 
 void test_settings_save_and_load(void) {
@@ -47,6 +48,7 @@ void test_settings_save_and_load(void) {
     
     // Modify settings
     settings.setUnitSystem(1); // 1 is UNIT_METRIC
+    settings.setUse24HourFormat(false);
     settings.setBrightness(50);
     settings.setAutoBrightness(true);
     settings.setTimezone("EST5EDT,M3.2.0,M11.1.0");
@@ -73,6 +75,7 @@ void test_settings_save_and_load(void) {
     settings_new.begin();
     
     TEST_ASSERT_EQUAL(1, settings_new.getUnitSystem());
+    TEST_ASSERT_EQUAL(false, settings_new.getUse24HourFormat());
     TEST_ASSERT_EQUAL(50, settings_new.getBrightness());
     TEST_ASSERT_EQUAL(true, settings_new.getAutoBrightness());
     TEST_ASSERT_EQUAL_STRING("EST5EDT,M3.2.0,M11.1.0", settings_new.getTimezone().c_str());

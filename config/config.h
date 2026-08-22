@@ -65,6 +65,9 @@ extern int getCurrentThemeFlavor();
 // #define UNIT_SYSTEM UNIT_METRIC
 #define UNIT_SYSTEM UNIT_IMPERIAL
 
+// Choose Time Format (12 vs 24 hour)
+#define DEFAULT_USE_24HOUR_FORMAT true
+
 // Auto Backlight Settings
 #define USE_LDR_AUTO_BACKLIGHT false
 

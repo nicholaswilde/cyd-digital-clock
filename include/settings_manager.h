@@ -52,10 +52,14 @@ private:
     int _localSensorUpdateInterval;
     float _localSensorTempOffset;
     float _localSensorHumOffset;
+    bool _use24HourFormat;
 
 public:
     SettingsManager();
     void begin();
+    
+    bool getUse24HourFormat() const;
+    void setUse24HourFormat(bool use24Hour);
     
     int getUnitSystem() const;
     void setUnitSystem(int unitSystem);

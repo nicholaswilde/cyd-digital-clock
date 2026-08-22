@@ -45,6 +45,12 @@ button:hover { background: #f5c2e7; }
     <option value='2' %UNIT_IMPERIAL%>Imperial (Fahrenheit, mph)</option>
 </select>
 
+<label for='use_24hr_format' title='Select 12-hour or 24-hour time format'>Time Format</label>
+<select id='use_24hr_format' name='use_24hr_format'>
+    <option value='0' %FORMAT_12HR%>12-Hour (AM/PM)</option>
+    <option value='1' %FORMAT_24HR%>24-Hour</option>
+</select>
+
 <label for='theme_flavor' title='Select the color palette for the user interface'>Theme (Catppuccin)</label>
 <select id='theme_flavor' name='theme_flavor'>
     <option value='1' %THEME_MOCHA%>Mocha</option>

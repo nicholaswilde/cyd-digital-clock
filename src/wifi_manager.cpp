@@ -562,6 +562,7 @@ void WifiManager::startWebServer() {
         }
         DynamicJsonDocument doc(2048);
         doc["unit_system"] = settings.getUnitSystem();
+        doc["use_24hr_format"] = settings.getUse24HourFormat();
         doc["brightness"] = settings.getBrightness();
         doc["auto_brightness"] = settings.getAutoBrightness();
         doc["timezone"] = settings.getTimezone();
@@ -628,6 +629,7 @@ void WifiManager::startWebServer() {
         }
         
         if (doc.containsKey("unit_system")) settings.setUnitSystem(doc["unit_system"]);
+        if (doc.containsKey("use_24hr_format")) settings.setUse24HourFormat(doc["use_24hr_format"]);
         if (doc.containsKey("brightness")) settings.setBrightness(doc["brightness"]);
         if (doc.containsKey("auto_brightness")) settings.setAutoBrightness(doc["auto_brightness"]);
         if (doc.containsKey("timezone")) settings.setTimezone(doc["timezone"].as<String>());
@@ -814,6 +816,9 @@ void WifiManager::handleSettings() {
     html.replace("%UNIT_METRIC%", settings.getUnitSystem() == UNIT_METRIC ? "selected" : "");
     html.replace("%UNIT_IMPERIAL%", settings.getUnitSystem() == UNIT_IMPERIAL ? "selected" : "");
     
+    html.replace("%FORMAT_12HR%", settings.getUse24HourFormat() ? "" : "selected");
+    html.replace("%FORMAT_24HR%", settings.getUse24HourFormat() ? "selected" : "");
+    
     html.replace("%THEME_MOCHA%", settings.getThemeFlavor() == CATPPUCCIN_MOCHA ? "selected" : "");
     html.replace("%THEME_MACCHIATO%", settings.getThemeFlavor() == CATPPUCCIN_MACCHIATO ? "selected" : "");
     html.replace("%THEME_FRAPPE%", settings.getThemeFlavor() == CATPPUCCIN_FRAPPE ? "selected" : "");
@@ -889,6 +894,7 @@ void WifiManager::handleSettings() {
 
 void WifiManager::handleSettingsSave() {
     if (_webServer->hasArg("unit_system")) settings.setUnitSystem(_webServer->arg("unit_system").toInt());
+    if (_webServer->hasArg("use_24hr_format")) settings.setUse24HourFormat(_webServer->arg("use_24hr_format").toInt() == 1);
     if (_webServer->hasArg("theme_flavor")) settings.setThemeFlavor(_webServer->arg("theme_flavor").toInt());
     if (_webServer->hasArg("screen_orientation")) settings.setScreenOrientation(_webServer->arg("screen_orientation").toInt());
     

@@ -6,6 +6,8 @@
 extern lv_obj_t* ui_ScreenMain;
 extern lv_obj_t* ui_LabelTime;
 
+extern lv_obj_t* ui_ScreenSettings;
+
 void ui_init(void);
 void ui_update(void);
 void ui_set_theme(int theme_id);

@@ -18,10 +18,10 @@ SettingsManager settings;
 WifiManager wifi(WIFI_SSID, WIFI_PASSWORD);
 MqttManager mqtt("", 1883, "", "", "");
 
-// ButtonManager button;
-// LedManager led;
-// BacklightManager backlight;
-// ScreenSaverManager screensaver(backlight, 60000);
+ButtonManager button(BOOT_BUTTON_PIN);
+LedManager led(4, 16, 17);
+BacklightManager backlight(21);
+ScreenSaverManager screensaver(backlight, 60000);
 
 // Add missing variable referenced in original MQTT diagnostics
 bool force_mqtt_publish = true;
@@ -36,13 +36,13 @@ void setup() {
     SdCardManager::begin();
     
     // 2. Hardware Initialize
-    // button.begin();
-    // led.begin();
-    // backlight.begin();
+    button.begin();
+    led.begin();
+    backlight.begin();
 
     // 3. Display & Touch
-    // display_init();
-    // touch_init();
+    initDisplayAndTouch();
+    initLVGL();
 
     // 4. UI Initialize
     ui_init();
@@ -55,6 +55,11 @@ void setup() {
     configTime(-28800, 3600, "pool.ntp.org"); // Default to PST for now
 
     // 6. MQTT
+    mqtt.onMessage([](String topic, String payload) {
+        if (topic.endsWith("command/use_24hr_format")) {
+            settings.setUse24HourFormat(payload == "ON");
+        }
+    });
     mqtt.begin();
 
     Serial.println("[System] Setup Complete.");
@@ -63,8 +68,12 @@ void setup() {
 void updateTimeUI() {
     struct tm timeinfo;
     if (getLocalTime(&timeinfo, 10)) {
-        char timeStr[9]; // HH:MM:SS\0
-        strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeinfo);
+        char timeStr[12]; // HH:MM:SS AM\0
+        if (settings.getUse24HourFormat()) {
+            strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeinfo);
+        } else {
+            strftime(timeStr, sizeof(timeStr), "%I:%M:%S %p", &timeinfo);
+        }
         ui_update_time(timeStr);
     }
 }
@@ -73,14 +82,13 @@ void loop() {
     unsigned long currentMillis = millis();
 
     // Hardware updates
-    // button.update(currentMillis);
-    // led.update(currentMillis);
+    button.update(currentMillis);
+    led.update(currentMillis);
 
     // Display & UI updates
-    // display_update();
-    // touch_update();
+    lv_timer_handler();
     ui_update();
-    // screensaver.update(currentMillis);
+    screensaver.update(currentMillis);
     // ScreenshotManager::update();
 
     // Network updates
@@ -128,5 +136,6 @@ void loop() {
         mqtt.publish("system/ip", wifi.getIPAddress().c_str(), true);
         mqtt.publish("system/version", "v0.1.0", true);
         mqtt.publish("system/mac", WiFi.macAddress().c_str(), true);
+        mqtt.publish("settings/use_24hr_format", settings.getUse24HourFormat() ? "ON" : "OFF", true);
     }
 }

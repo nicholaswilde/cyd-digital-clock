@@ -58,6 +58,7 @@ SettingsManager::SettingsManager() {
     _localSensorUpdateInterval = LOCAL_SENSOR_UPDATE_INTERVAL;
     _localSensorTempOffset = LOCAL_SENSOR_TEMP_OFFSET;
     _localSensorHumOffset = LOCAL_SENSOR_HUM_OFFSET;
+    _use24HourFormat = DEFAULT_USE_24HOUR_FORMAT;
     _sleepScheduleEnabled = DEFAULT_SLEEP_SCHEDULE_ENABLED;
     _sleepStartTime = DEFAULT_SLEEP_START_TIME;
     _sleepEndTime = DEFAULT_SLEEP_END_TIME;
@@ -111,6 +112,7 @@ void SettingsManager::begin() {
     _localSensorUpdateInterval = prefs.getInt("loc_sens_upd", LOCAL_SENSOR_UPDATE_INTERVAL);
     _localSensorTempOffset = prefs.getFloat("loc_sens_toff", LOCAL_SENSOR_TEMP_OFFSET);
     _localSensorHumOffset = prefs.getFloat("loc_sens_hoff", LOCAL_SENSOR_HUM_OFFSET);
+    _use24HourFormat = prefs.getBool("use_24hr", DEFAULT_USE_24HOUR_FORMAT);
     _sleepScheduleEnabled = prefs.getBool("sleep_sched", DEFAULT_SLEEP_SCHEDULE_ENABLED);
     _sleepStartTime = prefs.getString("sleep_start", DEFAULT_SLEEP_START_TIME);
     _sleepEndTime = prefs.getString("sleep_end", DEFAULT_SLEEP_END_TIME);
@@ -672,6 +674,17 @@ void SettingsManager::setSleepEndTime(const String& endTime) {
         Preferences prefs;
         prefs.begin("settings", false);
         prefs.putString("sleep_end", _sleepEndTime);
+        prefs.end();
+    }
+}
+
+bool SettingsManager::getUse24HourFormat() const { return _use24HourFormat; }
+void SettingsManager::setUse24HourFormat(bool use24Hour) {
+    if (_use24HourFormat != use24Hour) {
+        _use24HourFormat = use24Hour;
+        Preferences prefs;
+        prefs.begin("settings", false);
+        prefs.putBool("use_24hr", _use24HourFormat);
         prefs.end();
     }
 }

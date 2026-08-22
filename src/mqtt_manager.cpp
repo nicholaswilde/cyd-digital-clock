@@ -96,6 +96,7 @@ void MqttManager::onMqttConnect(bool sessionPresent) {
     subscribe("command/brightness", 0);
     subscribe("command/reboot", 0);
     subscribe("command/auto_brightness", 0);
+    subscribe("command/use_24hr_format", 0);
     subscribe("command/screensaver", 0);
     subscribe("command/sleep_schedule", 0);
     subscribe("command/sleep_start", 0);
@@ -187,6 +188,10 @@ void MqttManager::publishHADiscovery() {
     // Auto Brightness (Switch)
     String autoBrPayload = "{\"name\":\"Auto Brightness\",\"state_topic\":\"" + _baseTopic + "settings/auto_brightness\",\"command_topic\":\"" + _baseTopic + "command/auto_brightness\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_autobright\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/switch/" + deviceId + "/auto_brightness/config").c_str(), 0, true, autoBrPayload.c_str());
+    // 24 Hour Format (Switch)
+    String hr24Payload = "{\"name\":\"24 Hour Format\",\"state_topic\":\"" + _baseTopic + "settings/use_24hr_format\",\"command_topic\":\"" + _baseTopic + "command/use_24hr_format\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_24hr_format\"," + deviceJson + "}";
+    _mqttClient.publish(("homeassistant/switch/" + deviceId + "/use_24hr_format/config").c_str(), 0, true, hr24Payload.c_str());
+
     // Screensaver (Switch)
     String ssPayload = "{\"name\":\"Screensaver\",\"state_topic\":\"" + _baseTopic + "settings/screensaver\",\"command_topic\":\"" + _baseTopic + "command/screensaver\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_screensaver\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/switch/" + deviceId + "/screensaver/config").c_str(), 0, true, ssPayload.c_str());

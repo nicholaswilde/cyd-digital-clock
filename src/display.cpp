@@ -203,5 +203,6 @@ void initLVGL() {
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = my_touchpad_read;
+    indev_drv.long_press_time = 1500; // Match cyd-photo-frame 1.5s long press
     lv_indev_drv_register(&indev_drv);
 }

@@ -33,6 +33,7 @@ typedef struct {
 
 typedef struct _lv_indev_drv_t {
     uint32_t type;
+    uint32_t long_press_time;
     void (*read_cb)(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 } lv_indev_drv_t;
 
