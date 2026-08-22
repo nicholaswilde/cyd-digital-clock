@@ -676,6 +676,7 @@ void WifiManager::startWebServer() {
         if (doc.containsKey("local_sensor_temp_offset")) settings.setLocalSensorTempOffset(doc["local_sensor_temp_offset"]);
         if (doc.containsKey("local_sensor_hum_offset")) settings.setLocalSensorHumOffset(doc["local_sensor_hum_offset"]);
         
+        settings.setChanged();
         _webServer->send(200, "application/json", "{\"status\":\"ok\"}");
     });
     _webServer->on("/api/tab", [this]() {

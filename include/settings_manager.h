@@ -9,6 +9,7 @@
 
 class SettingsManager {
 private:
+    bool _settingsChanged = false;
     int _unitSystem;
     int _brightness;
     bool _autoBrightness;
@@ -181,6 +182,9 @@ public:
 
     float getLocalSensorHumOffset() const;
     void setLocalSensorHumOffset(float offset);
+    bool hasChanged() const { return _settingsChanged; }
+    void clearChanged() { _settingsChanged = false; }
+    void setChanged() { _settingsChanged = true; }
 };
 
 #endif // SETTINGS_MANAGER_H

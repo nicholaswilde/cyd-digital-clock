@@ -51,13 +51,14 @@ void setup() {
     // 5. Connect WiFi & Setup Time
     wifi.begin();
     
-    // Sync time using NTP
-    configTime(-28800, 3600, "pool.ntp.org"); // Default to PST for now
+    // Sync time using NTP with POSIX Timezone
+    configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
 
     // 6. MQTT
     mqtt.onMessage([](String topic, String payload) {
         if (topic.endsWith("command/use_24hr_format")) {
             settings.setUse24HourFormat(payload == "ON");
+            settings.setChanged();
         }
     });
     mqtt.begin();
@@ -95,16 +96,15 @@ void loop() {
     wifi.update();
     // mqtt.update();
 
-    // Sync Settings changes from Web -> Device
-    /*
+    // Sync Settings changes from Web/API -> Device
     if (settings.hasChanged()) {
         Serial.println("[System] Applying updated settings...");
         
         ui_set_theme(settings.getThemeFlavor());
-        backlight.setBrightness(settings.getBrightness());
+        backlight.setManualBrightness(settings.getBrightness());
         
         // Re-configure NTP timezone if it changed
-        configTime(settings.getGmtOffsetSec(), settings.getDaylightOffsetSec(), "pool.ntp.org");
+        configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
         
         if (mqtt.isConnected()) {
             mqtt.publish("status", "Settings updated.");
@@ -112,7 +112,6 @@ void loop() {
         
         settings.clearChanged();
     }
-    */
     
     // UI Interaction -> Settings changes (Bi-directional sync)
     ui_sync_toggles();
