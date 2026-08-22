@@ -76,12 +76,14 @@ Testing/
 # Python Virtualenv
 .venv/
 
-# Local Configuration Secrets
-config/secrets.h
-
-# Node.js
-node_modules/
+# Local Configuration Secrets & Environment Files
+secrets.h
+**/secrets.h
+!config/secrets.h.example
+!secrets.h.example
 .env
+.env.*
+!.env.example
 lcov.info
 lcov_raw.info
 # CodeGraph local index and database files
