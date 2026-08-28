@@ -641,6 +641,8 @@ void WifiManager::startWebServer() {
         if (doc.containsKey("led_enabled")) settings.setLedEnabled(doc["led_enabled"]);
         if (doc.containsKey("led_brightness")) {
             int pct = doc["led_brightness"];
+            if (pct < 10) pct = 10;
+            if (pct > 100) pct = 100;
             settings.setLedBrightness((pct * 255) / 100);
         }
         if (doc.containsKey("mqtt_enabled")) settings.setMqttEnabled(doc["mqtt_enabled"]);
@@ -902,6 +904,8 @@ void WifiManager::handleSettingsSave() {
     if (_webServer->hasArg("brightness")) settings.setBrightness(_webServer->arg("brightness").toInt());
     if (_webServer->hasArg("led_brightness")) {
         int pct = _webServer->arg("led_brightness").toInt();
+        if (pct < 10) pct = 10;
+        if (pct > 100) pct = 100;
         settings.setLedBrightness((pct * 255) / 100);
     }
     settings.setAutoBrightness(_webServer->hasArg("auto_brightness"));

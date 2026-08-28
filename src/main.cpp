@@ -20,7 +20,7 @@ MqttManager mqtt("", 1883, "", "", "");
 
 ButtonManager button(BOOT_BUTTON_PIN);
 LedManager led(4, 16, 17);
-BacklightManager backlight(21);
+BacklightManager backlight(TFT_BL);
 ScreenSaverManager screensaver(backlight, 60000);
 
 // Add missing variable referenced in original MQTT diagnostics
@@ -38,11 +38,15 @@ void setup() {
     // 2. Hardware Initialize
     button.begin();
     led.begin();
-    backlight.begin();
+    led.setEnabled(settings.getLedEnabled());
+    led.setBrightness(settings.getLedBrightness());
 
     // 3. Display & Touch
     initDisplayAndTouch();
     initLVGL();
+
+    // Must call backlight.begin() AFTER initDisplayAndTouch so TFT library doesn't hijack the PWM pin
+    backlight.begin();
 
     // 4. UI Initialize
     ui_init();
@@ -59,9 +63,23 @@ void setup() {
         if (topic.endsWith("command/use_24hr_format")) {
             settings.setUse24HourFormat(payload == "ON");
             settings.setChanged();
+        } else if (topic.endsWith("command/led_enabled")) {
+            settings.setLedEnabled(payload == "ON");
+            settings.setChanged();
+        } else if (topic.endsWith("command/led_brightness")) {
+            int pct = payload.toInt();
+            if (pct < 10) pct = 10;
+            if (pct > 100) pct = 100;
+            settings.setLedBrightness((pct * 255) / 100);
+            settings.setChanged();
         }
     });
     mqtt.begin();
+
+    // Restore saved brightness on boot
+    if (!settings.getAutoBrightness()) {
+        backlight.setManualBrightness(settings.getBrightness());
+    }
 
     Serial.println("[System] Setup Complete.");
 }
@@ -102,6 +120,8 @@ void loop() {
         
         ui_set_theme(settings.getThemeFlavor());
         backlight.setManualBrightness(settings.getBrightness());
+        led.setEnabled(settings.getLedEnabled());
+        led.setBrightness(settings.getLedBrightness());
         
         // Re-configure NTP timezone if it changed
         configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
@@ -136,5 +156,7 @@ void loop() {
         mqtt.publish("system/version", "v0.1.0", true);
         mqtt.publish("system/mac", WiFi.macAddress().c_str(), true);
         mqtt.publish("settings/use_24hr_format", settings.getUse24HourFormat() ? "ON" : "OFF", true);
+        mqtt.publish("settings/led_enabled", settings.getLedEnabled() ? "ON" : "OFF", true);
+        mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
     }
 }

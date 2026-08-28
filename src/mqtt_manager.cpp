@@ -94,6 +94,8 @@ void MqttManager::onMqttConnect(bool sessionPresent) {
 
     // Subscribe to commands
     subscribe("command/brightness", 0);
+    subscribe("command/led_enabled", 0);
+    subscribe("command/led_brightness", 0);
     subscribe("command/reboot", 0);
     subscribe("command/auto_brightness", 0);
     subscribe("command/use_24hr_format", 0);
@@ -151,12 +153,17 @@ void MqttManager::publishHADiscovery() {
     _mqttClient.publish(("homeassistant/binary_sensor/" + deviceId + "/connection/config").c_str(), 0, true, connPayload.c_str());
 
     // Brightness Control (Number)
-    String brightPayload = "{\"name\":\"Brightness\",\"state_topic\":\"" + _baseTopic + "settings/brightness\",\"command_topic\":\"" + _baseTopic + "command/brightness\",\"min\":0,\"max\":100,\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_bright\"," + deviceJson + "}";
+    String brightPayload = "{\"name\":\"Brightness\",\"state_topic\":\"" + _baseTopic + "settings/brightness\",\"command_topic\":\"" + _baseTopic + "command/brightness\",\"min\":10,\"max\":100,\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_bright\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/number/" + deviceId + "/brightness/config").c_str(), 0, true, brightPayload.c_str());
     vTaskDelay(pdMS_TO_TICKS(50));
     
+    // LED Enabled (Switch)
+    String ledEnabledPayload = "{\"name\":\"LED Enabled\",\"state_topic\":\"" + _baseTopic + "settings/led_enabled\",\"command_topic\":\"" + _baseTopic + "command/led_enabled\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_led_en\"," + deviceJson + "}";
+    _mqttClient.publish(("homeassistant/switch/" + deviceId + "/led_enabled/config").c_str(), 0, true, ledEnabledPayload.c_str());
+    vTaskDelay(pdMS_TO_TICKS(50));
+
     // LED Brightness (Number)
-    String ledBrightPayload = "{\"name\":\"LED Brightness\",\"state_topic\":\"" + _baseTopic + "settings/led_brightness\",\"command_topic\":\"" + _baseTopic + "command/led_brightness\",\"min\":0,\"max\":100,\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_ledbright\"," + deviceJson + "}";
+    String ledBrightPayload = "{\"name\":\"LED Brightness\",\"state_topic\":\"" + _baseTopic + "settings/led_brightness\",\"command_topic\":\"" + _baseTopic + "command/led_brightness\",\"min\":10,\"max\":100,\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_ledbright\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/number/" + deviceId + "/led_brightness/config").c_str(), 0, true, ledBrightPayload.c_str());
     vTaskDelay(pdMS_TO_TICKS(50));
 

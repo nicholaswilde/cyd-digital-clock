@@ -158,10 +158,10 @@ button:hover { background: #f5c2e7; }
     <label for='led_enabled' title='Enable or disable the onboard RGB LED'>RGB LED Enabled</label>
 </div>
 
-<label for='led_brightness' title='Adjust the brightness of the RGB LED'>LED Brightness (0-100%)</label>
+<label for='led_brightness' title='Adjust the brightness of the RGB LED'>LED Brightness (10-100%)</label>
 <div class='slider-group'>
-    <input type='range' id='led_brightness_slider' min='0' max='100' value='%LED_BRIGHTNESS%' oninput='document.getElementById("led_brightness").value = this.value'>
-    <input type='number' id='led_brightness' name='led_brightness' min='0' max='100' value='%LED_BRIGHTNESS%' oninput='document.getElementById("led_brightness_slider").value = this.value'>
+    <input type='range' id='led_brightness_slider' min='10' max='100' value='%LED_BRIGHTNESS%' oninput='document.getElementById("led_brightness").value = this.value'>
+    <input type='number' id='led_brightness' name='led_brightness' min='10' max='100' value='%LED_BRIGHTNESS%' oninput='document.getElementById("led_brightness_slider").value = this.value'>
 </div>
 
 <div class='checkbox-group'>

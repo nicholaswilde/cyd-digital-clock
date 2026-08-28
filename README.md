@@ -90,6 +90,8 @@ Settings can be adjusted via the touchscreen interface:
 | Setting | Description |
 | :--- | :--- |
 | **Time Format** | Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes. |
+| **LED Enabled** | Enable or disable the onboard RGB LED status indicator. |
+| **LED Brightness** | Adjust the brightness of the RGB LED from 0% to 100%. |
 
 ---
 

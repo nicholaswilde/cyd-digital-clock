@@ -35,11 +35,14 @@ void LedManager::writePins(bool r, bool g, bool b) {
         return;
     }
 #ifndef NATIVE_TEST
+    // --- Scale active duty by _brightness logarithmically (gamma 2.2) ---
+    float normalized = _brightness / 255.0f;
+    int pwmBrightness = (int)(pow(normalized, 2.2f) * 255.0f);
+
     // --- Pins are active-LOW; duty 255 = OFF, 0 = full-ON ---
-    // --- Scale active duty by _brightness (0-255) ---
-    int rDuty = r ? (255 - _brightness) : 255;
-    int gDuty = g ? (255 - _brightness) : 255;
-    int bDuty = b ? (255 - _brightness) : 255;
+    int rDuty = r ? (255 - pwmBrightness) : 255;
+    int gDuty = g ? (255 - pwmBrightness) : 255;
+    int bDuty = b ? (255 - pwmBrightness) : 255;
     ledcWrite(5, rDuty);
     ledcWrite(6, gDuty);
     ledcWrite(7, bDuty);
