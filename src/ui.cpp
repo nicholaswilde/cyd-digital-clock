@@ -336,34 +336,69 @@ void ui_show_ap_mode(const char* apSSID) {
         ui_ScreenAP = lv_obj_create(NULL);
         lv_obj_set_style_bg_color(ui_ScreenAP, lv_color_hex(current_colors.base), LV_PART_MAIN);
 
-        lv_obj_t* wifi_icon = lv_label_create(ui_ScreenAP);
+        int screen_w = lv_disp_get_hor_res(NULL);
+        bool isLandscape = (screen_w > 240);
+        int header_h = isLandscape ? 45 : 60;
+        
+        // Header Bar Container
+        lv_obj_t* header = lv_obj_create(ui_ScreenAP);
+        lv_obj_set_size(header, screen_w, header_h);
+        lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
+        lv_obj_set_style_bg_color(header, lv_color_hex(current_colors.crust), LV_PART_MAIN);
+        lv_obj_set_style_border_width(header, 0, LV_PART_MAIN);
+        lv_obj_set_style_radius(header, 0, LV_PART_MAIN);
+        lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+
+        // Header Title
+        lv_obj_t* header_title = lv_label_create(header);
+        lv_label_set_text(header_title, isLandscape ? "CYD Digital Clock" : "CYD Digital\nClock");
+        lv_obj_set_style_text_color(header_title, lv_color_hex(current_colors.header_text), LV_PART_MAIN);
+        lv_obj_align(header_title, LV_ALIGN_LEFT_MID, 10, 0);
+
+        // Header Right-Side Status Area
+        lv_obj_t * header_right_area = lv_obj_create(header);
+        lv_obj_set_size(header_right_area, LV_SIZE_CONTENT, 30);
+        lv_obj_align(header_right_area, LV_ALIGN_RIGHT_MID, -5, 0);
+        lv_obj_set_flex_flow(header_right_area, LV_FLEX_FLOW_ROW_REVERSE);
+        lv_obj_set_flex_align(header_right_area, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_bg_opa(header_right_area, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_border_width(header_right_area, 0, LV_PART_MAIN);
+        lv_obj_set_style_pad_all(header_right_area, 0, LV_PART_MAIN);
+        lv_obj_set_style_pad_gap(header_right_area, 8, LV_PART_MAIN);
+        lv_obj_clear_flag(header_right_area, LV_OBJ_FLAG_SCROLLABLE);
+
+        lv_obj_t* wifi_icon = lv_label_create(header_right_area);
         lv_label_set_text(wifi_icon, LV_SYMBOL_WIFI);
         lv_obj_set_style_text_color(wifi_icon, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
-        lv_obj_set_style_text_font(wifi_icon, &lv_font_montserrat_20, LV_PART_MAIN);
-        lv_obj_align(wifi_icon, LV_ALIGN_TOP_RIGHT, -10, 10);
 
-        lv_obj_t* status_lbl = lv_label_create(ui_ScreenAP);
+        lv_obj_t* status_lbl = lv_label_create(header_right_area);
         lv_label_set_text(status_lbl, "AP Active");
         lv_obj_set_style_text_color(status_lbl, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
-        lv_obj_set_style_text_font(status_lbl, &lv_font_montserrat_20, LV_PART_MAIN);
-        lv_obj_align(status_lbl, LV_ALIGN_TOP_LEFT, 10, 10);
 
-        lv_obj_t* setup_lbl = lv_label_create(ui_ScreenAP);
+        // Main content container
+        lv_obj_t* content = lv_obj_create(ui_ScreenAP);
+        lv_obj_set_size(content, screen_w, lv_disp_get_ver_res(NULL) - header_h);
+        lv_obj_align(content, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_set_style_bg_opa(content, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_border_width(content, 0, LV_PART_MAIN);
+        lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_pad_gap(content, 20, LV_PART_MAIN);
+
+        lv_obj_t* setup_lbl = lv_label_create(content);
         lv_label_set_text(setup_lbl, "Setup");
-        lv_obj_set_style_text_color(setup_lbl, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_set_style_text_color(setup_lbl, lv_color_hex(current_colors.peach), LV_PART_MAIN);
         lv_obj_set_style_text_font(setup_lbl, &lv_font_montserrat_48, LV_PART_MAIN);
-        lv_obj_align(setup_lbl, LV_ALIGN_CENTER, 0, -40);
 
-        lv_obj_t* ip_lbl = lv_label_create(ui_ScreenAP);
+        lv_obj_t* ip_lbl = lv_label_create(content);
         lv_label_set_text(ip_lbl, "192.168.4.1");
-        lv_obj_set_style_text_color(ip_lbl, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_set_style_text_color(ip_lbl, lv_color_hex(current_colors.blue), LV_PART_MAIN);
         lv_obj_set_style_text_font(ip_lbl, &lv_font_montserrat_28, LV_PART_MAIN);
-        lv_obj_align(ip_lbl, LV_ALIGN_CENTER, 0, 20);
 
-        ui_LabelAPSSID = lv_label_create(ui_ScreenAP);
-        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        ui_LabelAPSSID = lv_label_create(content);
+        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.lavender), LV_PART_MAIN);
         lv_obj_set_style_text_font(ui_LabelAPSSID, &lv_font_montserrat_20, LV_PART_MAIN);
-        lv_obj_align(ui_LabelAPSSID, LV_ALIGN_CENTER, 0, 70);
     }
     
     if (ui_LabelAPSSID) {
