@@ -29,21 +29,17 @@ static void theme_dropdown_event_cb(lv_event_t * e) {
 void ui_set_theme(int theme_id) {
     current_colors = getCatppuccinFlavor(theme_id);
     
+    lv_obj_t* old_main = ui_ScreenMain;
+    lv_obj_t* old_settings = ui_ScreenSettings;
+    
     bool on_settings = false;
-    if (lv_scr_act() == ui_ScreenSettings) {
+    if (lv_scr_act() == old_settings && old_settings != nullptr) {
         on_settings = true;
     }
 
-    if (ui_ScreenMain) {
-        lv_obj_del(ui_ScreenMain);
-        ui_ScreenMain = nullptr;
-    }
-    if (ui_ScreenSettings) {
-        lv_obj_del(ui_ScreenSettings);
-        ui_ScreenSettings = nullptr;
-    }
-    
     // Backup old pointers to avoid dangling usage before they are initialized
+    ui_ScreenMain = nullptr;
+    ui_ScreenSettings = nullptr;
     ui_LabelTime = nullptr;
     ui_SwitchAutoBrightness = nullptr;
     ui_Switch24Hour = nullptr;
@@ -58,6 +54,9 @@ void ui_set_theme(int theme_id) {
     if (on_settings) {
         lv_scr_load_anim(ui_ScreenSettings, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
     }
+    
+    if (old_main) lv_obj_del(old_main);
+    if (old_settings) lv_obj_del(old_settings);
 }
 
 static void main_screen_event_cb(lv_event_t * e) {
