@@ -151,6 +151,7 @@ void ui_init(void) {
     lv_obj_clear_flag(ui_ScreenMain, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(ui_ScreenMain, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_color(ui_ScreenMain, lv_color_hex(current_colors.mantle), LV_PART_MAIN);
+    lv_obj_set_style_text_color(ui_ScreenMain, lv_color_hex(current_colors.text), LV_PART_MAIN);
     lv_obj_add_event_cb(ui_ScreenMain, main_screen_event_cb, LV_EVENT_ALL, NULL);
     
     ui_LabelTime = lv_label_create(ui_ScreenMain);
