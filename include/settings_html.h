@@ -7,7 +7,7 @@ const char settings_html[] PROGMEM = R"=====(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CYD Weather Station - Settings</title>
+<title>CYD Digital Clock - Settings</title>
 <style>
 body { font-family: 'Inter', system-ui, sans-serif; background: #1e1e2e; color: #cdd6f4; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; box-sizing: border-box; }
 .card { background: #181825; border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: 1px solid #313244; }
@@ -34,16 +34,11 @@ button:hover { background: #f5c2e7; }
 </head>
 <body>
 <div class='card'>
-<h2 style="margin-bottom: 5px;">CYD Weather Station</h2>
+<h2 style="margin-bottom: 5px;">CYD Digital Clock</h2>
 <p style="text-align: center; color: #a6adc8; margin-top: 0; margin-bottom: 20px; font-size: 14px;">Version %APP_VERSION%</p>
 <form method='POST' action='/settings/save'>
 
 <div class='section-title' style='margin-top: 0;'>Display & UI</div>
-<label for='unit_system' title='Select the measurement units for weather data'>Unit System</label>
-<select id='unit_system' name='unit_system'>
-    <option value='1' %UNIT_METRIC%>Metric (Celsius, m/s)</option>
-    <option value='2' %UNIT_IMPERIAL%>Imperial (Fahrenheit, mph)</option>
-</select>
 
 <label for='use_24hr_format' title='Select 12-hour or 24-hour time format'>Time Format</label>
 <select id='use_24hr_format' name='use_24hr_format'>
@@ -100,57 +95,13 @@ button:hover { background: #f5c2e7; }
     <input type='time' id='sleep_end_time' name='sleep_end_time' value='%SLEEP_END_TIME%'>
 </div>
 
-<div class='section-title'>Location & Weather</div>
-<label for='owm_api' title='Your OpenWeatherMap API key'>OpenWeatherMap API Key (<a href='https://home.openweathermap.org/api_keys' target='_blank' style='color: #89b4fa; text-decoration: none;'>Get Key</a>)</label>
-<div class='password-wrapper'>
-    <input type='password' id='owm_api' name='owm_api' value='%OWM_API%'>
-    <span class='toggle-password' onclick='togglePwd("owm_api", this)'><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
-</div>
-<label for='zip' title='Your US zip code for weather data'>Zip Code (US Only)</label>
-<input type='text' id='zip' name='zip' value='%ZIP%'>
-
-<label for='city' title='OpenWeatherMap City ID for accurate location'>City ID (<a href='https://openweathermap.org/find' target='_blank' style='color: #89b4fa; text-decoration: none;'>OpenWeatherMap</a>)</label>
-<input type='text' id='city' name='city' value='%CITY%'>
-
-<label for='lat' title='Latitude for weather location'>Latitude</label>
-<input type='text' id='lat' name='lat' value='%LAT%'>
-
-<label for='lon' title='Longitude for weather location'>Longitude</label>
-<input type='text' id='lon' name='lon' value='%LON%'>
+<div class='section-title'>Time & Date</div>
 
 <label for='tz' title='POSIX timezone string for accurate local time'>Timezone (<a href='https://gist.github.com/alwynallan/24d96091655391107939' target='_blank' style='color: #89b4fa; text-decoration: none;'>POSIX format</a>)</label>
 <input type='text' id='tz' name='tz' value='%TZ%'>
 
 <label for='ntp_server' title='Network Time Protocol server for time synchronization'>NTP Server</label>
 <input type='text' id='ntp_server' name='ntp_server' value='%NTP_SERVER%'>
-
-<label for='update_interval' title='How often to fetch new weather data'>Weather Update Interval (Minutes)</label>
-<input type='number' id='update_interval' name='update_interval' min='1' max='60' value='%UPDATE_INTERVAL%'>
-
-<hr>
-<h3>Local Sensor Settings</h3>
-<div class='checkbox-group'>
-    <input type='checkbox' id='local_sensor_enabled' name='local_sensor_enabled' value='1' %LOCAL_SENSOR_ENABLED_CHECKED% onchange='toggleLocalSensorSettings()'>
-    <label for='local_sensor_enabled' title='Enable the local temperature and humidity sensor'>Local Sensor Enabled</label>
-</div>
-
-<div id='local_sensor_settings' style='display: none; margin-left: 20px; border-left: 2px solid #313244; padding-left: 15px; margin-bottom: 20px;'>
-    <label for='local_sensor_type' title='Type of local sensor'>Local Sensor Type</label>
-    <select id='local_sensor_type' name='local_sensor_type'>
-    <option value='1' %LOCAL_SENSOR_TYPE_1_SELECTED%>DHT22</option>
-    <option value='2' %LOCAL_SENSOR_TYPE_2_SELECTED%>SHT40</option>
-    <option value='3' %LOCAL_SENSOR_TYPE_3_SELECTED%>DHT11</option>
-    </select>
-
-    <label for='local_sensor_update_interval' title='How often to read the local sensor'>Local Sensor Update Interval (Seconds)</label>
-    <input type='number' id='local_sensor_update_interval' name='local_sensor_update_interval' min='1' max='120' value='%LOCAL_SENSOR_UPDATE_INTERVAL%'>
-
-    <label for='local_sensor_temp_offset' title='Offset to apply to the local temperature sensor'>Temperature Offset</label>
-    <input type='number' id='local_sensor_temp_offset' name='local_sensor_temp_offset' step='0.1' value='%LOCAL_SENSOR_TEMP_OFFSET%'>
-
-    <label for='local_sensor_hum_offset' title='Offset to apply to the local humidity sensor'>Humidity Offset (%)</label>
-    <input type='number' id='local_sensor_hum_offset' name='local_sensor_hum_offset' step='0.1' value='%LOCAL_SENSOR_HUM_OFFSET%'>
-</div>
 
 <div class='section-title'>System Features</div>
 <div class='checkbox-group'>
@@ -221,29 +172,15 @@ button:hover { background: #f5c2e7; }
     <span class='toggle-password' onclick='togglePwd("ap_password", this)'><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
 </div>
 
-<div class='checkbox-group'>
-    <input type='checkbox' id='sd_logging_enabled' name='sd_logging_enabled' value='1' %SD_LOGGING%>
-    <label for='sd_logging_enabled' title='Enable logging to the SD card'>SD Card Logging</label>
-</div>
 
-<div class='checkbox-group'>
-    <input type='checkbox' id='sd_cache_enabled' name='sd_cache_enabled' value='1' %SD_CACHE%>
-    <label for='sd_cache_enabled' title='Enable caching resources on the SD card'>SD Card Cache</label>
-</div>
 
 <button type='submit'>Save Settings & Reboot</button>
 </form>
 <a href="/" class="btn-back">&larr; Back to Dashboard</a>
-<p style="margin-top: 25px; margin-bottom: 0; font-size: 13px; color: #6c7086; text-align: center;">Built for %DEVICE_NAME% | <a href="https://github.com/nicholaswilde/cyd-weather-station" target="_blank" style="color: #89b4fa; text-decoration: none;">GitHub</a></p>
+<p style="margin-top: 25px; margin-bottom: 0; font-size: 13px; color: #6c7086; text-align: center;">Built for %DEVICE_NAME% | <a href="https://github.com/nicholaswilde/cyd-digital-clock" target="_blank" style="color: #89b4fa; text-decoration: none;">GitHub</a></p>
 </div>
 <script>
-function toggleLocalSensorSettings() {
-    var cb = document.getElementById('local_sensor_enabled');
-    var div = document.getElementById('local_sensor_settings');
-    if (cb && div) {
-        div.style.display = cb.checked ? 'block' : 'none';
-    }
-}
+
 function toggleMqttSettings() {
     var cb = document.getElementById('mqtt_enabled');
     var div = document.getElementById('mqtt_settings');
@@ -285,7 +222,6 @@ function togglePwd(id, el) {
     }
 }
 window.onload = function() {
-    toggleLocalSensorSettings();
     toggleMqttSettings();
     toggleScreensaverSettings();
   toggleSleepSettings();

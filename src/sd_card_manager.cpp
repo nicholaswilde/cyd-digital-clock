@@ -1,5 +1,13 @@
 #include "sd_card_manager.h"
 #include <SPI.h>
+
+#ifndef SD_CS_PIN
+#define SD_CS_PIN 5
+#define SD_SCK_PIN 18
+#define SD_MISO_PIN 19
+#define SD_MOSI_PIN 23
+#endif
+
 #include <SD.h>
 #include <FS.h>
 #include "config/config.h"

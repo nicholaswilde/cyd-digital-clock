@@ -21,7 +21,7 @@ void test_screensaver_initial_state(void) {
 void test_screensaver_trigger_on_timeout(void) {
     BacklightManager bm(21, 0, 10.0f);
     bm.setManualBrightness(80);
-    TEST_ASSERT_EQUAL(204, bm.getDutyCycle());
+    TEST_ASSERT_EQUAL(158, bm.getDutyCycle()); // Gamma corrected 80% is 158
 
     ScreenSaverManager ss(bm, 300000);
     ss.begin();
@@ -29,7 +29,7 @@ void test_screensaver_trigger_on_timeout(void) {
     // 100 seconds elapsed: should not trigger
     ss.update(100000);
     TEST_ASSERT_FALSE(ss.isActive());
-    TEST_ASSERT_EQUAL(204, bm.getDutyCycle());
+    TEST_ASSERT_EQUAL(158, bm.getDutyCycle()); // Gamma corrected 80% is 158
 
     // 301 seconds elapsed: should trigger screensaver
     ss.update(301000);
@@ -48,11 +48,14 @@ void test_screensaver_wake_on_activity(void) {
     // Trigger screensaver
     ss.update(301000);
     TEST_ASSERT_TRUE(ss.isActive());
+    TEST_ASSERT_EQUAL(26, bm.getDutyCycle());
 
     // Wake up
     ss.wake(80);
     TEST_ASSERT_FALSE(ss.isActive());
-    TEST_ASSERT_EQUAL(204, bm.getDutyCycle());
+    
+    // Check if backlight restored
+    TEST_ASSERT_EQUAL(158, bm.getDutyCycle()); // Gamma corrected 80% is 158
 }
 
 int main(int argc, char **argv) {

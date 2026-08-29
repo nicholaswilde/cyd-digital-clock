@@ -53,6 +53,7 @@ void setup() {
     ui_set_theme(settings.getThemeFlavor());
 
     // 5. Connect WiFi & Setup Time
+    wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
     wifi.begin();
     
     // Sync time using NTP with POSIX Timezone

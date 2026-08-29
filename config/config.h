@@ -3,22 +3,7 @@
 
 #include "secrets.h"
 
-// Location Settings
-// #define WEATHER_ZIP_CODE "90210"
-#define WEATHER_ZIP_CODE ""
 
-// Coordinates (Fallback if USE_ZIP_CODE is false)
-// #define WEATHER_API_LATITUDE "34.10313"
-#define WEATHER_API_LATITUDE ""
-// #define WEATHER_API_LONGITUDE "-118.41625"
-#define WEATHER_API_LONGITUDE ""
-
-// City Code (For OpenWeatherMap only)
-// #define WEATHER_CITY_CODE "2643743" // London
-#define WEATHER_CITY_CODE ""
-
-// Open-Meteo API Settings
-#define WEATHER_UPDATE_INTERVAL_MINS 1
 
 // NTP and Timezone Settings
 // Note: We use POSIX strings for efficiency to avoid bundling a giant tzdata lookup table.
@@ -57,13 +42,6 @@ extern int getCurrentThemeFlavor();
 #define COLOR_LAVENDER     (getCatppuccinFlavor(getCurrentThemeFlavor()).lavender)
 #define COLOR_HEADER_TEXT  (getCatppuccinFlavor(getCurrentThemeFlavor()).header_text)
 
-// Unit System Settings
-#define UNIT_METRIC   1
-#define UNIT_IMPERIAL 2
-
-// Choose Unit System (UNIT_METRIC or UNIT_IMPERIAL)
-// #define UNIT_SYSTEM UNIT_METRIC
-#define UNIT_SYSTEM UNIT_IMPERIAL
 
 // Choose Time Format (12 vs 24 hour)
 #define DEFAULT_USE_24HOUR_FORMAT true
@@ -95,10 +73,6 @@ extern int getCurrentThemeFlavor();
 #define DEFAULT_SLEEP_START_TIME "22:00"
 #define DEFAULT_SLEEP_END_TIME "07:00"
 
-// SD Card Weather Logging Settings
-#define USE_SD_LOGGING false
-#define USE_SD_CACHE false
-
 // Display Performance Settings
 // DISPLAY_DRAW_BUF_ROWS: Height of the LVGL draw buffer in pixel rows.
 //   Larger = fewer SPI flush calls per frame (smoother animation) but longer
@@ -127,12 +101,6 @@ extern int getCurrentThemeFlavor();
 //   Lower = snappier transitions. LVGL default is 300 ms.
 #define DISPLAY_SWIPE_ANIM_MS 150
 
-// SD Card SPI Settings
-#define SD_CS_PIN 5
-#define SD_SCK_PIN 18
-#define SD_MISO_PIN 19
-#define SD_MOSI_PIN 23
-
 // Physical BOOT Button Settings
 #define BOOT_BUTTON_PIN 0
 
@@ -143,12 +111,4 @@ extern int getCurrentThemeFlavor();
 // #define STATIC_GATEWAY     "192.168.1.1"
 // #define STATIC_SUBNET      "255.255.255.0"
 // #define STATIC_DNS         "1.1.1.1"
-
-// Local Sensor Settings
-#define LOCAL_SENSOR_ENABLED false
-#define LOCAL_SENSOR_TYPE 1 // 1=DHT22, 2=SHT40, 3=DHT11
-#define LOCAL_SENSOR_UPDATE_INTERVAL 10 // seconds
-#define LOCAL_SENSOR_TEMP_OFFSET 0.0
-#define LOCAL_SENSOR_HUM_OFFSET 0.0
-
 #endif // CONFIG_H

@@ -10,12 +10,10 @@
 class SettingsManager {
 private:
     bool _settingsChanged = false;
-    int _unitSystem;
     int _brightness;
     bool _autoBrightness;
     String _timezone;
     int _themeFlavor;
-    bool _sdLoggingEnabled;
     bool _screenshotServerEnabled;
     bool _apiServerEnabled;
     int _screensaverTimeout;
@@ -36,23 +34,11 @@ private:
     String _mqttBaseTopic;
     String _wifiSSID;
     String _wifiPassword;
-    bool _sdCacheEnabled;
     bool _screensaverEnabled;
     bool _sleepScheduleEnabled;
     String _sleepStartTime;
     String _sleepEndTime;
-    String _zipCode;
-    String _cityCode;
-    String _latitude;
-    String _longitude;
-    String _owmApiKey;
     String _ntpServer;
-    int _weatherUpdateInterval;
-    bool _localSensorEnabled;
-    int _localSensorType;
-    int _localSensorUpdateInterval;
-    float _localSensorTempOffset;
-    float _localSensorHumOffset;
     bool _use24HourFormat;
 
 public:
@@ -62,8 +48,6 @@ public:
     bool getUse24HourFormat() const;
     void setUse24HourFormat(bool use24Hour);
     
-    int getUnitSystem() const;
-    void setUnitSystem(int unitSystem);
     
     int getBrightness() const;
     void setBrightness(int brightness);
@@ -76,8 +60,6 @@ public:
     int getThemeFlavor() const;
     void setThemeFlavor(int flavor);
 
-    bool getSdLoggingEnabled() const;
-    void setSdLoggingEnabled(bool enabled);
 
     bool getScreenshotServerEnabled() const;
     void setScreenshotServerEnabled(bool enabled);
@@ -115,8 +97,6 @@ public:
     const String& getWifiPassword() const;
     void setWifiPassword(const String& password);
 
-    bool getSdCacheEnabled() const;
-    void setSdCacheEnabled(bool enabled);
 
     bool getScreensaverEnabled() const;
     void setScreensaverEnabled(bool enabled);
@@ -147,41 +127,19 @@ public:
 
     void factoryReset();
 
-    const String& getZipCode() const;
-    void setZipCode(const String& zipCode);
 
-    const String& getCityCode() const;
-    void setCityCode(const String& cityCode);
 
-    const String& getLatitude() const;
-    void setLatitude(const String& latitude);
 
-    const String& getLongitude() const;
-    void setLongitude(const String& longitude);
 
-    const String& getOwmApiKey() const;
-    void setOwmApiKey(const String& apiKey);
 
     const String& getNtpServer() const;
     void setNtpServer(const String& ntpServer);
 
-    int getWeatherUpdateInterval() const;
-    void setWeatherUpdateInterval(int interval);
 
-    bool getLocalSensorEnabled() const;
-    void setLocalSensorEnabled(bool enabled);
 
-    int getLocalSensorType() const;
-    void setLocalSensorType(int type);
 
-    int getLocalSensorUpdateInterval() const;
-    void setLocalSensorUpdateInterval(int interval);
 
-    float getLocalSensorTempOffset() const;
-    void setLocalSensorTempOffset(float offset);
 
-    float getLocalSensorHumOffset() const;
-    void setLocalSensorHumOffset(float offset);
     bool hasChanged() const { return _settingsChanged; }
     void clearChanged() { _settingsChanged = false; }
     void setChanged() { _settingsChanged = true; }

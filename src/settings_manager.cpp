@@ -2,10 +2,6 @@
 #include <Preferences.h>
 #include "config/config.h"
 
-#ifndef OPENWEATHERMAP_API_KEY
-#define OPENWEATHERMAP_API_KEY ""
-#endif
-
 #ifndef MQTT_SERVER
 #define MQTT_SERVER ""
 #define MQTT_PORT 1883
@@ -14,12 +10,10 @@
 #endif
 
 SettingsManager::SettingsManager() {
-    _unitSystem = UNIT_SYSTEM;
     _brightness = 80;
     _autoBrightness = USE_LDR_AUTO_BACKLIGHT;
     _timezone = TIMEZONE_DEFAULT;
     _themeFlavor = CATPPUCCIN_MOCHA;
-    _sdLoggingEnabled = USE_SD_LOGGING;
     _screenshotServerEnabled = false; // Default to false
     _apiServerEnabled = API_SERVER_ENABLED;
     _screenOrientation = 1;
@@ -33,7 +27,6 @@ SettingsManager::SettingsManager() {
     _mqttBaseTopic = "cyd/";
     _wifiSSID = WIFI_SSID;
     _wifiPassword = WIFI_PASSWORD;
-    _sdCacheEnabled = USE_SD_CACHE;
     _screensaverEnabled = SCREENSAVER_ENABLED;
     _screensaverTimeout = SCREENSAVER_TIMEOUT_MS;
     _staticIpEnabled = false;
@@ -46,18 +39,7 @@ SettingsManager::SettingsManager() {
 #else
     _apPassword = "";
 #endif
-    _zipCode = WEATHER_ZIP_CODE;
-    _cityCode = WEATHER_CITY_CODE;
-    _latitude = WEATHER_API_LATITUDE;
-    _longitude = WEATHER_API_LONGITUDE;
-    _owmApiKey = OPENWEATHERMAP_API_KEY;
     _ntpServer = NTP_SERVER;
-    _weatherUpdateInterval = WEATHER_UPDATE_INTERVAL_MINS;
-    _localSensorEnabled = LOCAL_SENSOR_ENABLED;
-    _localSensorType = LOCAL_SENSOR_TYPE;
-    _localSensorUpdateInterval = LOCAL_SENSOR_UPDATE_INTERVAL;
-    _localSensorTempOffset = LOCAL_SENSOR_TEMP_OFFSET;
-    _localSensorHumOffset = LOCAL_SENSOR_HUM_OFFSET;
     _use24HourFormat = DEFAULT_USE_24HOUR_FORMAT;
     _sleepScheduleEnabled = DEFAULT_SLEEP_SCHEDULE_ENABLED;
     _sleepStartTime = DEFAULT_SLEEP_START_TIME;
@@ -68,12 +50,10 @@ void SettingsManager::begin() {
     Preferences prefs;
     prefs.begin("settings", false);
     
-    _unitSystem = prefs.getInt("unit", UNIT_SYSTEM);
     _brightness = prefs.getInt("bright", 80);
     _autoBrightness = prefs.getBool("auto_bright", USE_LDR_AUTO_BACKLIGHT);
     _timezone = prefs.getString("tz", TIMEZONE_DEFAULT);
     _themeFlavor = prefs.getInt("theme", CATPPUCCIN_MOCHA);
-    _sdLoggingEnabled = prefs.getBool("sd_log", USE_SD_LOGGING);
     _screenshotServerEnabled = prefs.getBool("scr_srv", false);
     _apiServerEnabled = prefs.getBool("api_srv", API_SERVER_ENABLED);
     _screenOrientation = prefs.getInt("screen_rot", 1);
@@ -87,7 +67,6 @@ void SettingsManager::begin() {
     _mqttBaseTopic = prefs.getString("mqtt_base", "cyd/");
     _wifiSSID = prefs.getString("wifi_ssid", WIFI_SSID);
     _wifiPassword = prefs.getString("wifi_pass", WIFI_PASSWORD);
-    _sdCacheEnabled = prefs.getBool("sd_cache", USE_SD_CACHE);
     _screensaverEnabled = prefs.getBool("scr_enabled", SCREENSAVER_ENABLED);
     _screensaverTimeout = prefs.getInt("scr_timeout", SCREENSAVER_TIMEOUT_MS);
     _staticIpEnabled = prefs.getBool("static_en", false);
@@ -100,18 +79,7 @@ void SettingsManager::begin() {
 #else
     _apPassword = prefs.getString("ap_pass", "");
 #endif
-    _zipCode = prefs.getString("zip", WEATHER_ZIP_CODE);
-    _cityCode = prefs.getString("city", WEATHER_CITY_CODE);
-    _latitude = prefs.getString("lat", WEATHER_API_LATITUDE);
-    _longitude = prefs.getString("lon", WEATHER_API_LONGITUDE);
-    _owmApiKey = prefs.getString("owm_api", OPENWEATHERMAP_API_KEY);
     _ntpServer = prefs.getString("ntp_srv", NTP_SERVER);
-    _weatherUpdateInterval = prefs.getInt("upd_int", WEATHER_UPDATE_INTERVAL_MINS);
-    _localSensorEnabled = prefs.getBool("loc_sens_en", LOCAL_SENSOR_ENABLED);
-    _localSensorType = prefs.getInt("loc_sens_typ", LOCAL_SENSOR_TYPE);
-    _localSensorUpdateInterval = prefs.getInt("loc_sens_upd", LOCAL_SENSOR_UPDATE_INTERVAL);
-    _localSensorTempOffset = prefs.getFloat("loc_sens_toff", LOCAL_SENSOR_TEMP_OFFSET);
-    _localSensorHumOffset = prefs.getFloat("loc_sens_hoff", LOCAL_SENSOR_HUM_OFFSET);
     _use24HourFormat = prefs.getBool("use_24hr", DEFAULT_USE_24HOUR_FORMAT);
     _sleepScheduleEnabled = prefs.getBool("sleep_sched", DEFAULT_SLEEP_SCHEDULE_ENABLED);
     _sleepStartTime = prefs.getString("sleep_start", DEFAULT_SLEEP_START_TIME);
@@ -120,19 +88,7 @@ void SettingsManager::begin() {
     prefs.end();
 }
 
-int SettingsManager::getUnitSystem() const {
-    return _unitSystem;
-}
 
-void SettingsManager::setUnitSystem(int unitSystem) {
-    if (_unitSystem != unitSystem) {
-        _unitSystem = unitSystem;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putInt("unit", _unitSystem);
-        prefs.end();
-    }
-}
 
 int SettingsManager::getBrightness() const {
     return _brightness;
@@ -224,19 +180,7 @@ void SettingsManager::setWifiPassword(const String& password) {
     }
 }
 
-bool SettingsManager::getSdLoggingEnabled() const {
-    return _sdLoggingEnabled;
-}
 
-void SettingsManager::setSdLoggingEnabled(bool enabled) {
-    if (_sdLoggingEnabled != enabled) {
-        _sdLoggingEnabled = enabled;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putBool("sd_log", _sdLoggingEnabled);
-        prefs.end();
-    }
-}
 
 bool SettingsManager::getScreenshotServerEnabled() const {
     return _screenshotServerEnabled;
@@ -328,19 +272,7 @@ void SettingsManager::setMqttEnabled(bool enabled) {
     }
 }
 
-bool SettingsManager::getSdCacheEnabled() const {
-    return _sdCacheEnabled;
-}
 
-void SettingsManager::setSdCacheEnabled(bool enabled) {
-    if (_sdCacheEnabled != enabled) {
-        _sdCacheEnabled = enabled;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putBool("sd_cache", _sdCacheEnabled);
-        prefs.end();
-    }
-}
 
 bool SettingsManager::getScreensaverEnabled() const {
     return _screensaverEnabled;
@@ -370,75 +302,15 @@ void SettingsManager::setScreensaverTimeout(int timeout) {
     }
 }
 
-const String& SettingsManager::getZipCode() const {
-    return _zipCode;
-}
 
-void SettingsManager::setZipCode(const String& zipCode) {
-    if (_zipCode != zipCode) {
-        _zipCode = zipCode;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putString("zip", _zipCode);
-        prefs.end();
-    }
-}
 
-const String& SettingsManager::getCityCode() const {
-    return _cityCode;
-}
 
-void SettingsManager::setCityCode(const String& cityCode) {
-    if (_cityCode != cityCode) {
-        _cityCode = cityCode;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putString("city", _cityCode);
-        prefs.end();
-    }
-}
 
-const String& SettingsManager::getLatitude() const {
-    return _latitude;
-}
 
-void SettingsManager::setLatitude(const String& latitude) {
-    if (_latitude != latitude) {
-        _latitude = latitude;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putString("lat", _latitude);
-        prefs.end();
-    }
-}
 
-const String& SettingsManager::getLongitude() const {
-    return _longitude;
-}
 
-void SettingsManager::setLongitude(const String& longitude) {
-    if (_longitude != longitude) {
-        _longitude = longitude;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putString("lon", _longitude);
-        prefs.end();
-    }
-}
 
-const String& SettingsManager::getOwmApiKey() const {
-    return _owmApiKey;
-}
 
-void SettingsManager::setOwmApiKey(const String& apiKey) {
-    if (_owmApiKey != apiKey) {
-        _owmApiKey = apiKey;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putString("owm_api", _owmApiKey);
-        prefs.end();
-    }
-}
 
 const String& SettingsManager::getNtpServer() const {
     return _ntpServer;
@@ -502,20 +374,7 @@ void SettingsManager::setMqttBaseTopic(const String& baseTopic) {
     }
 }
 
-int SettingsManager::getWeatherUpdateInterval() const {
-    return _weatherUpdateInterval;
-}
 
-void SettingsManager::setWeatherUpdateInterval(int interval) {
-    if (interval < 1) interval = 1;
-    if (_weatherUpdateInterval != interval) {
-        _weatherUpdateInterval = interval;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putInt("upd_int", _weatherUpdateInterval);
-        prefs.end();
-    }
-}
 
 bool SettingsManager::getStaticIpEnabled() const { return _staticIpEnabled; }
 void SettingsManager::setStaticIpEnabled(bool enabled) {
@@ -573,76 +432,15 @@ void SettingsManager::factoryReset() {
     prefs.end();
 }
 
-bool SettingsManager::getLocalSensorEnabled() const {
-    return _localSensorEnabled;
-}
 
-void SettingsManager::setLocalSensorEnabled(bool enabled) {
-    if (_localSensorEnabled != enabled) {
-        _localSensorEnabled = enabled;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putBool("loc_sens_en", _localSensorEnabled);
-        prefs.end();
-    }
-}
 
-int SettingsManager::getLocalSensorType() const {
-    return _localSensorType;
-}
 
-void SettingsManager::setLocalSensorType(int type) {
-    if (_localSensorType != type) {
-        _localSensorType = type;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putInt("loc_sens_typ", _localSensorType);
-        prefs.end();
-    }
-}
 
-int SettingsManager::getLocalSensorUpdateInterval() const {
-    return _localSensorUpdateInterval;
-}
 
-void SettingsManager::setLocalSensorUpdateInterval(int interval) {
-    if (interval < 1) interval = 1;
-    if (_localSensorUpdateInterval != interval) {
-        _localSensorUpdateInterval = interval;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putInt("loc_sens_upd", _localSensorUpdateInterval);
-        prefs.end();
-    }
-}
 
-float SettingsManager::getLocalSensorTempOffset() const {
-    return _localSensorTempOffset;
-}
 
-void SettingsManager::setLocalSensorTempOffset(float offset) {
-    if (_localSensorTempOffset != offset) {
-        _localSensorTempOffset = offset;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putFloat("loc_sens_toff", _localSensorTempOffset);
-        prefs.end();
-    }
-}
 
-float SettingsManager::getLocalSensorHumOffset() const {
-    return _localSensorHumOffset;
-}
 
-void SettingsManager::setLocalSensorHumOffset(float offset) {
-    if (_localSensorHumOffset != offset) {
-        _localSensorHumOffset = offset;
-        Preferences prefs;
-        prefs.begin("settings", false);
-        prefs.putFloat("loc_sens_hoff", _localSensorHumOffset);
-        prefs.end();
-    }
-}
 
 
 bool SettingsManager::getSleepScheduleEnabled() const { return _sleepScheduleEnabled; }

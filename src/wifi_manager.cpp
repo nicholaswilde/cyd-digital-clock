@@ -118,9 +118,15 @@ void WifiManager::update() {
                 _lastReconnectAttempt = millis();
                 Serial.println("[WiFi] Reconnecting...");
                 configureStaticIP();
-                WiFi.begin(_ssid.c_str(), _password.c_str());
+                
+                // Always use latest credentials from settings in case they were updated via Improv
+                String currentSSID = settings.getWifiSSID();
+                String currentPass = settings.getWifiPassword();
+                WiFi.begin(currentSSID.c_str(), currentPass.c_str());
+                
                 _state = WIFI_STATE_CONNECTING;
                 _connectionStartTime = millis();
+                Serial.printf("[WiFi] Connecting to %s...\n", currentSSID.c_str());
             }
             break;
 
@@ -228,7 +234,7 @@ String WifiManager::getAPSSID() {
     for (size_t i = 0; i < suffix.length(); i++) {
         suffix[i] = toupper(suffix[i]);
     }
-    return "cyd-weather-station-" + suffix;
+    return "cyd-digital-clock-" + suffix;
 }
 
 void WifiManager::startAPMode() {
@@ -285,6 +291,17 @@ void WifiManager::startAPMode() {
         html += "</body></html>";
         _webServer->send(200, "text/html", html);
     });
+
+    // Explicitly handle common captive portal detection endpoints to suppress "request handler not found" logs
+    auto cpRedirect = [this]() { handleNotFound(); };
+    _webServer->on("/generate_204", cpRedirect);        // Android
+    _webServer->on("/gen_204", cpRedirect);             // Android/Google
+    _webServer->on("/hotspot-detect.html", cpRedirect); // Apple
+    _webServer->on("/canonical.html", cpRedirect);      // Firefox
+    _webServer->on("/success.txt", cpRedirect);         // Apple/Firefox
+    _webServer->on("/ncsi.txt", cpRedirect);            // Windows
+    _webServer->on("/favicon.ico", [this]() { _webServer->send(404); });
+
     _webServer->onNotFound([this]() { handleNotFound(); });
     registerOTARoutes();
     _webServer->begin();
@@ -318,7 +335,7 @@ void WifiManager::handleRoot() {
     if (scanStatus == WIFI_SCAN_RUNNING || scanStatus == WIFI_SCAN_FAILED) {
         html += "<meta http-equiv='refresh' content='3'>";
     }
-    html += "<title>CYD Weather Station Setup</title>";
+    html += "<title>CYD Digital Clock Setup</title>";
     html += "<style>";
     html += "body { font-family: 'Inter', system-ui, sans-serif; background: #1e1e2e; color: #cdd6f4; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }";
     html += ".card { background: #181825; border-radius: 12px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: 1px solid #313244; }";
@@ -355,7 +372,7 @@ void WifiManager::handleRoot() {
     html += "</script>";
     html += "</head><body>";
     html += "<div class='card'>";
-    html += "<h2 style=\"margin-bottom: 5px;\">CYD Weather Station</h2>";
+    html += "<h2 style=\"margin-bottom: 5px;\">CYD Digital Clock</h2>";
 #ifdef APP_VERSION
     html += "<p style=\"text-align: center; color: #a6adc8; margin-top: 0; margin-bottom: 20px; font-size: 14px;\">Version " + String(APP_VERSION) + "</p>";
 #else
@@ -384,27 +401,7 @@ void WifiManager::handleRoot() {
     html += "<span class='toggle-password' onclick='togglePwd(\"pass\", this)'><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg></span>";
     html += "</div>";
     
-    html += "<div class='section-title'>Weather Service</div>";
-    
-    html += "<label for='owm_api'>OpenWeatherMap API Key</label>";
-    html += "<div class='password-wrapper'>";
-    html += "<input type='password' id='owm_api' name='owm_api' placeholder='API Key' value='" + settings.getOwmApiKey() + "'>";
-    html += "<span class='toggle-password' onclick='togglePwd(\"owm_api\", this)'><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg></span>";
-    html += "</div>";
-    
-    html += "<div class='section-title'>Location & Time</div>";
-    
-    html += "<label for='zip'>Zip Code (US Only)</label>";
-    html += "<input type='text' id='zip' name='zip' placeholder='e.g. 90210' value='" + settings.getZipCode() + "'>";
-    
-    html += "<label for='city'>City ID (<a href='https://openweathermap.org/find' target='_blank' style='color: #89b4fa; text-decoration: none;'>OpenWeatherMap</a>)</label>";
-    html += "<input type='text' id='city' name='city' placeholder='e.g. 2643743' value='" + settings.getCityCode() + "'>";
-    
-    html += "<label for='lat'>Latitude</label>";
-    html += "<input type='text' id='lat' name='lat' placeholder='e.g. 34.1031' value='" + settings.getLatitude() + "'>";
-    
-    html += "<label for='lon'>Longitude</label>";
-    html += "<input type='text' id='lon' name='lon' placeholder='e.g. -118.416' value='" + settings.getLongitude() + "'>";
+    html += "<div class='section-title'>Time & Date</div>";
     
     html += "<label for='tz'>Timezone (<a href='https://gist.github.com/alwynallan/24d96091655391107939' target='_blank' style='color: #89b4fa; text-decoration: none;'>POSIX format</a>)</label>";
     html += "<input type='text' id='tz' name='tz' placeholder='e.g. PST8PDT,M3.2.0,M11.1.0' value='" + settings.getTimezone() + "'>";
@@ -412,11 +409,9 @@ void WifiManager::handleRoot() {
     html += "<label for='ntp_server'>NTP Server</label>";
     html += "<input type='text' id='ntp_server' name='ntp_server' placeholder='e.g. pool.ntp.org' value='" + settings.getNtpServer() + "'>";
     
-    html += "<p style='color: #a6adc8; font-size: 12px; margin-top: -10px; margin-bottom: 20px; text-align: center;'><em>Leave location fields blank to auto-detect your location via IP address.</em></p>";
-    
     html += "<button type='submit'>Save & Connect</button>";
     html += "</form>";
-    html += "<p style=\"margin-top: 25px; margin-bottom: 0; font-size: 13px; color: #6c7086; text-align: center;\">Built for " + String(DEVICE_NAME) + " | <a href=\"https://github.com/nicholaswilde/cyd-weather-station\" target=\"_blank\" style=\"color: #89b4fa; text-decoration: none;\">GitHub</a></p>";
+    html += "<p style=\"margin-top: 25px; margin-bottom: 0; font-size: 13px; color: #6c7086; text-align: center;\">Built for " + String(DEVICE_NAME) + " | <a href=\"https://github.com/nicholaswilde/cyd-digital-clock\" target=\"_blank\" style=\"color: #89b4fa; text-decoration: none;\">GitHub</a></p>";
     html += "</div>";
     html += "</body></html>";
 
@@ -428,12 +423,7 @@ void WifiManager::handleSave() {
 #ifndef NATIVE_TEST
     String ssid = _webServer->arg("ssid");
     String pass = _webServer->arg("pass");
-    String zip = _webServer->arg("zip");
-    String city = _webServer->arg("city");
-    String lat = _webServer->arg("lat");
-    String lon = _webServer->arg("lon");
     String tz = _webServer->arg("tz");
-    String owmApi = _webServer->arg("owm_api");
     String ntpServer = _webServer->arg("ntp_server");
 
     Serial.printf("[WiFi] Saved new credentials via captive portal: %s\n", ssid.c_str());
@@ -455,12 +445,7 @@ void WifiManager::handleSave() {
 
     settings.setWifiSSID(ssid);
     settings.setWifiPassword(pass);
-    settings.setZipCode(zip);
-    settings.setCityCode(city);
-    if (lat.length() > 0) settings.setLatitude(lat);
-    if (lon.length() > 0) settings.setLongitude(lon);
     if (tz.length() > 0) settings.setTimezone(tz);
-    if (owmApi.length() > 0) settings.setOwmApiKey(owmApi);
     if (ntpServer.length() > 0) settings.setNtpServer(ntpServer);
 
     _webServer->send(200, "text/html", html);
@@ -496,7 +481,7 @@ void WifiManager::startWebServer() {
         settings.factoryReset();
         WiFi.disconnect(true, true);
         String html = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-        html += "<title>CYD Weather Station</title>";
+        html += "<title>CYD Digital Clock</title>";
         html += "<style>body { font-family: 'Inter', sans-serif; background: #1e1e2e; color: #cdd6f4; text-align: center; padding: 50px; }</style>";
         html += "<meta http-equiv=\"refresh\" content=\"5;url=/\">";
         html += "</head><body><h2 style='color: #f5c2e7;'>Factory Reset Complete</h2><p>The device is restarting in AP Setup mode...</p></body></html>";
@@ -561,13 +546,11 @@ void WifiManager::startWebServer() {
             return;
         }
         DynamicJsonDocument doc(2048);
-        doc["unit_system"] = settings.getUnitSystem();
         doc["use_24hr_format"] = settings.getUse24HourFormat();
         doc["brightness"] = settings.getBrightness();
         doc["auto_brightness"] = settings.getAutoBrightness();
         doc["timezone"] = settings.getTimezone();
         doc["theme_flavor"] = settings.getThemeFlavor();
-        doc["sd_logging_enabled"] = settings.getSdLoggingEnabled();
         doc["screenshot_server_enabled"] = settings.getScreenshotServerEnabled();
         doc["api_server_enabled"] = settings.getApiServerEnabled();
         doc["screen_orientation"] = settings.getScreenOrientation();
@@ -581,30 +564,18 @@ void WifiManager::startWebServer() {
         doc["mqtt_base_topic"] = settings.getMqttBaseTopic();
         doc["wifi_ssid"] = settings.getWifiSSID();
         doc["wifi_password"] = settings.getWifiPassword();
-        doc["sd_cache_enabled"] = settings.getSdCacheEnabled();
         doc["screensaver_enabled"] = settings.getScreensaverEnabled();
         doc["screensaver_timeout"] = settings.getScreensaverTimeout();
         doc["sleep_schedule_enabled"] = settings.getSleepScheduleEnabled();
         doc["sleep_start_time"] = settings.getSleepStartTime();
         doc["sleep_end_time"] = settings.getSleepEndTime();
-        doc["weather_update_interval"] = settings.getWeatherUpdateInterval();
         doc["static_ip_enabled"] = settings.getStaticIpEnabled();
         doc["static_ip"] = settings.getStaticIp();
         doc["static_gateway"] = settings.getStaticGateway();
         doc["static_subnet"] = settings.getStaticSubnet();
         doc["static_dns"] = settings.getStaticDns();
         doc["ap_password"] = settings.getApPassword();
-        doc["zip_code"] = settings.getZipCode();
-        doc["city_code"] = settings.getCityCode();
-        doc["latitude"] = settings.getLatitude();
-        doc["longitude"] = settings.getLongitude();
-        doc["owm_api_key"] = settings.getOwmApiKey();
         doc["ntp_server"] = settings.getNtpServer();
-        doc["local_sensor_enabled"] = settings.getLocalSensorEnabled();
-        doc["local_sensor_type"] = settings.getLocalSensorType();
-        doc["local_sensor_update_interval"] = settings.getLocalSensorUpdateInterval();
-        doc["local_sensor_temp_offset"] = settings.getLocalSensorTempOffset();
-        doc["local_sensor_hum_offset"] = settings.getLocalSensorHumOffset();
 
         String response;
         serializeJson(doc, response);
@@ -627,14 +598,11 @@ void WifiManager::startWebServer() {
             _webServer->send(400, "text/plain", "Invalid JSON");
             return;
         }
-        
-        if (doc.containsKey("unit_system")) settings.setUnitSystem(doc["unit_system"]);
         if (doc.containsKey("use_24hr_format")) settings.setUse24HourFormat(doc["use_24hr_format"]);
         if (doc.containsKey("brightness")) settings.setBrightness(doc["brightness"]);
         if (doc.containsKey("auto_brightness")) settings.setAutoBrightness(doc["auto_brightness"]);
         if (doc.containsKey("timezone")) settings.setTimezone(doc["timezone"].as<String>());
         if (doc.containsKey("theme_flavor")) settings.setThemeFlavor(doc["theme_flavor"]);
-        if (doc.containsKey("sd_logging_enabled")) settings.setSdLoggingEnabled(doc["sd_logging_enabled"]);
         if (doc.containsKey("screenshot_server_enabled")) settings.setScreenshotServerEnabled(doc["screenshot_server_enabled"]);
         if (doc.containsKey("api_server_enabled")) settings.setApiServerEnabled(doc["api_server_enabled"]);
         if (doc.containsKey("screen_orientation")) settings.setScreenOrientation(doc["screen_orientation"]);
@@ -653,30 +621,18 @@ void WifiManager::startWebServer() {
         if (doc.containsKey("mqtt_base_topic")) settings.setMqttBaseTopic(doc["mqtt_base_topic"].as<String>());
         if (doc.containsKey("wifi_ssid")) settings.setWifiSSID(doc["wifi_ssid"].as<String>());
         if (doc.containsKey("wifi_password")) settings.setWifiPassword(doc["wifi_password"].as<String>());
-        if (doc.containsKey("sd_cache_enabled")) settings.setSdCacheEnabled(doc["sd_cache_enabled"]);
         if (doc.containsKey("screensaver_enabled")) settings.setScreensaverEnabled(doc["screensaver_enabled"]);
         if (doc.containsKey("screensaver_timeout")) settings.setScreensaverTimeout(doc["screensaver_timeout"]);
         if (doc.containsKey("sleep_schedule_enabled")) settings.setSleepScheduleEnabled(doc["sleep_schedule_enabled"]);
         if (doc.containsKey("sleep_start_time")) settings.setSleepStartTime(doc["sleep_start_time"].as<String>());
         if (doc.containsKey("sleep_end_time")) settings.setSleepEndTime(doc["sleep_end_time"].as<String>());
-        if (doc.containsKey("weather_update_interval")) settings.setWeatherUpdateInterval(doc["weather_update_interval"]);
         if (doc.containsKey("static_ip_enabled")) settings.setStaticIpEnabled(doc["static_ip_enabled"]);
         if (doc.containsKey("static_ip")) settings.setStaticIp(doc["static_ip"].as<String>());
         if (doc.containsKey("static_gateway")) settings.setStaticGateway(doc["static_gateway"].as<String>());
         if (doc.containsKey("static_subnet")) settings.setStaticSubnet(doc["static_subnet"].as<String>());
         if (doc.containsKey("static_dns")) settings.setStaticDns(doc["static_dns"].as<String>());
         if (doc.containsKey("ap_password")) settings.setApPassword(doc["ap_password"].as<String>());
-        if (doc.containsKey("zip_code")) settings.setZipCode(doc["zip_code"].as<String>());
-        if (doc.containsKey("city_code")) settings.setCityCode(doc["city_code"].as<String>());
-        if (doc.containsKey("latitude")) settings.setLatitude(doc["latitude"].as<String>());
-        if (doc.containsKey("longitude")) settings.setLongitude(doc["longitude"].as<String>());
-        if (doc.containsKey("owm_api_key")) settings.setOwmApiKey(doc["owm_api_key"].as<String>());
         if (doc.containsKey("ntp_server")) settings.setNtpServer(doc["ntp_server"].as<String>());
-        if (doc.containsKey("local_sensor_enabled")) settings.setLocalSensorEnabled(doc["local_sensor_enabled"]);
-        if (doc.containsKey("local_sensor_type")) settings.setLocalSensorType(doc["local_sensor_type"]);
-        if (doc.containsKey("local_sensor_update_interval")) settings.setLocalSensorUpdateInterval(doc["local_sensor_update_interval"]);
-        if (doc.containsKey("local_sensor_temp_offset")) settings.setLocalSensorTempOffset(doc["local_sensor_temp_offset"]);
-        if (doc.containsKey("local_sensor_hum_offset")) settings.setLocalSensorHumOffset(doc["local_sensor_hum_offset"]);
         
         settings.setChanged();
         _webServer->send(200, "application/json", "{\"status\":\"ok\"}");
@@ -707,6 +663,9 @@ void WifiManager::startWebServer() {
             _webServer->send(400, "text/plain", "Missing val parameter");
         }
     });
+    
+    _webServer->onNotFound([this]() { _webServer->send(404, "text/plain", "Not Found"); });
+    
     registerOTARoutes();
     _webServer->begin();
     Serial.println("[WiFi] Screenshot server started on port 80.");
@@ -815,9 +774,6 @@ void WifiManager::handleSettings() {
     html.replace("%APP_VERSION%", "unknown");
 #endif
     html.replace("%DEVICE_NAME%", DEVICE_NAME);
-
-    html.replace("%UNIT_METRIC%", settings.getUnitSystem() == UNIT_METRIC ? "selected" : "");
-    html.replace("%UNIT_IMPERIAL%", settings.getUnitSystem() == UNIT_IMPERIAL ? "selected" : "");
     
     html.replace("%FORMAT_12HR%", settings.getUse24HourFormat() ? "" : "selected");
     html.replace("%FORMAT_24HR%", settings.getUse24HourFormat() ? "selected" : "");
@@ -840,22 +796,8 @@ void WifiManager::handleSettings() {
     html.replace("%SLEEP_END_TIME%", settings.getSleepEndTime());
     html.replace("%SCREENSAVER_TIMEOUT%", String(settings.getScreensaverTimeout() / 60000));
     
-    html.replace("%OWM_API%", settings.getOwmApiKey());
-    html.replace("%ZIP%", settings.getZipCode());
-    html.replace("%CITY%", settings.getCityCode());
-    html.replace("%LAT%", settings.getLatitude());
-    html.replace("%LON%", settings.getLongitude());
     html.replace("%TZ%", settings.getTimezone());
     html.replace("%NTP_SERVER%", settings.getNtpServer());
-    html.replace("%UPDATE_INTERVAL%", String(settings.getWeatherUpdateInterval()));
-
-    html.replace("%LOCAL_SENSOR_ENABLED_CHECKED%", settings.getLocalSensorEnabled() ? "checked" : "");
-    html.replace("%LOCAL_SENSOR_TYPE_1_SELECTED%", settings.getLocalSensorType() == 1 ? "selected" : "");
-    html.replace("%LOCAL_SENSOR_TYPE_2_SELECTED%", settings.getLocalSensorType() == 2 ? "selected" : "");
-    html.replace("%LOCAL_SENSOR_TYPE_3_SELECTED%", settings.getLocalSensorType() == 3 ? "selected" : "");
-    html.replace("%LOCAL_SENSOR_UPDATE_INTERVAL%", String(settings.getLocalSensorUpdateInterval()));
-    html.replace("%LOCAL_SENSOR_TEMP_OFFSET%", String(settings.getLocalSensorTempOffset(), 1));
-    html.replace("%LOCAL_SENSOR_HUM_OFFSET%", String(settings.getLocalSensorHumOffset(), 1));
     
     html.replace("%LED_ENABLED%", settings.getLedEnabled() ? "checked" : "");
     html.replace("%LED_BRIGHTNESS%", String((settings.getLedBrightness() * 100) / 255));
@@ -889,14 +831,11 @@ void WifiManager::handleSettings() {
     
     html.replace("%SCREENSHOT_ENABLED%", settings.getScreenshotServerEnabled() ? "checked" : "");
     html.replace("%API_SERVER_ENABLED%", settings.getApiServerEnabled() ? "checked" : "");
-    html.replace("%SD_LOGGING%", settings.getSdLoggingEnabled() ? "checked" : "");
-    html.replace("%SD_CACHE%", settings.getSdCacheEnabled() ? "checked" : "");
     
     _webServer->send(200, "text/html", html);
 }
 
 void WifiManager::handleSettingsSave() {
-    if (_webServer->hasArg("unit_system")) settings.setUnitSystem(_webServer->arg("unit_system").toInt());
     if (_webServer->hasArg("use_24hr_format")) settings.setUse24HourFormat(_webServer->arg("use_24hr_format").toInt() == 1);
     if (_webServer->hasArg("theme_flavor")) settings.setThemeFlavor(_webServer->arg("theme_flavor").toInt());
     if (_webServer->hasArg("screen_orientation")) settings.setScreenOrientation(_webServer->arg("screen_orientation").toInt());
@@ -915,20 +854,8 @@ void WifiManager::handleSettingsSave() {
     if (_webServer->hasArg("sleep_start_time")) settings.setSleepStartTime(_webServer->arg("sleep_start_time"));
     if (_webServer->hasArg("sleep_end_time")) settings.setSleepEndTime(_webServer->arg("sleep_end_time"));
     
-    if (_webServer->hasArg("owm_api")) settings.setOwmApiKey(_webServer->arg("owm_api"));
-    if (_webServer->hasArg("zip")) settings.setZipCode(_webServer->arg("zip"));
-    if (_webServer->hasArg("city")) settings.setCityCode(_webServer->arg("city"));
-    if (_webServer->hasArg("lat")) settings.setLatitude(_webServer->arg("lat"));
-    if (_webServer->hasArg("lon")) settings.setLongitude(_webServer->arg("lon"));
     if (_webServer->hasArg("tz")) settings.setTimezone(_webServer->arg("tz"));
     if (_webServer->hasArg("ntp_server")) settings.setNtpServer(_webServer->arg("ntp_server"));
-    if (_webServer->hasArg("update_interval")) settings.setWeatherUpdateInterval(_webServer->arg("update_interval").toInt());
-    
-    settings.setLocalSensorEnabled(_webServer->hasArg("local_sensor_enabled"));
-    if (_webServer->hasArg("local_sensor_type")) settings.setLocalSensorType(_webServer->arg("local_sensor_type").toInt());
-    if (_webServer->hasArg("local_sensor_update_interval")) settings.setLocalSensorUpdateInterval(_webServer->arg("local_sensor_update_interval").toInt());
-    if (_webServer->hasArg("local_sensor_temp_offset")) settings.setLocalSensorTempOffset(_webServer->arg("local_sensor_temp_offset").toFloat());
-    if (_webServer->hasArg("local_sensor_hum_offset")) settings.setLocalSensorHumOffset(_webServer->arg("local_sensor_hum_offset").toFloat());
     
     settings.setLedEnabled(_webServer->hasArg("led_enabled"));
 
@@ -950,8 +877,6 @@ void WifiManager::handleSettingsSave() {
     
     settings.setScreenshotServerEnabled(_webServer->hasArg("screenshot_server_enabled"));
     settings.setApiServerEnabled(_webServer->hasArg("api_server_enabled"));
-    settings.setSdLoggingEnabled(_webServer->hasArg("sd_logging_enabled"));
-    settings.setSdCacheEnabled(_webServer->hasArg("sd_cache_enabled"));
 
     String html = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
     html += "<title>Settings Saved</title>";

@@ -7,7 +7,7 @@ const char landing_html[] PROGMEM = R"=====(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CYD Weather Station</title>
+<title>CYD Digital Clock</title>
 <style>
 body { font-family: 'Inter', system-ui, sans-serif; background: #1e1e2e; color: #cdd6f4; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
 .card { background: #181825; border-radius: 12px; padding: 40px 30px; width: 100%; max-width: 400px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: 1px solid #313244; text-align: center; }
@@ -28,7 +28,7 @@ p.subtitle { color: #a6adc8; margin-top: 0; margin-bottom: 30px; font-size: 15px
 </head>
 <body>
 <div class='card'>
-<h1>CYD Weather Station</h1>
+<h1>CYD Digital Clock</h1>
 <p class='subtitle'>Version %APP_VERSION%</p>
 
 <a href="/settings" class="btn btn-settings">⚙️ Device Settings</a>
@@ -39,7 +39,7 @@ p.subtitle { color: #a6adc8; margin-top: 0; margin-bottom: 30px; font-size: 15px
 <a href="/clear_cache" class="btn btn-update" style="background: #fab387; color: #11111b;" onclick="return confirm('Are you sure you want to clear the SD card cache?');">🗑️ Clear SD Cache</a>
 <a href="/reset" class="btn btn-reset" onclick="return confirm('Are you sure you want to factory reset this device? All settings and Wi-Fi credentials will be erased and the device will restart in AP Setup mode. This cannot be undone.');">⚠️ Factory Reset</a>
 
-<p style="margin-top: 25px; font-size: 13px; color: #6c7086;">Built for %DEVICE_NAME% | <a href="https://github.com/nicholaswilde/cyd-weather-station" target="_blank" style="color: #89b4fa; text-decoration: none;">GitHub</a></p>
+<p style="margin-top: 25px; font-size: 13px; color: #6c7086;">Built for %DEVICE_NAME% | <a href="https://github.com/nicholaswilde/cyd-digital-clock" target="_blank" style="color: #89b4fa; text-decoration: none;">GitHub</a></p>
 </div>
 </body>
 </html>

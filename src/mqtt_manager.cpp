@@ -104,14 +104,7 @@ void MqttManager::onMqttConnect(bool sessionPresent) {
     subscribe("command/sleep_start", 0);
     subscribe("command/sleep_end", 0);
     subscribe("command/theme", 0);
-    subscribe("command/units", 0);
     subscribe("command/screen_orientation", 0);
-    subscribe("command/update_interval", 0);
-    subscribe("command/local_sensor", 0);
-    subscribe("command/local_sensor_type", 0);
-    subscribe("command/local_sensor_update_interval", 0);
-    subscribe("command/local_sensor_temp_offset", 0);
-    subscribe("command/local_sensor_hum_offset", 0);
 }
 
 void MqttManager::publishHADiscovery() {
@@ -119,35 +112,6 @@ void MqttManager::publishHADiscovery() {
     mac.replace(":", "");
     String deviceId = "cyd_weather_" + mac;
     String deviceJson = "\"device\":{\"identifiers\":[\"" + deviceId + "\"],\"name\":\"CYD Weather Station " + mac.substring(mac.length() - 4) + "\",\"manufacturer\":\"Nicholas Wilde\",\"model\":\"CYD-28R/35C\"}";
-
-    // Temperature
-    String tempPayload = "{\"name\":\"Temperature\",\"state_topic\":\"" + _baseTopic + "weather/temperature\",\"unit_of_measurement\":\"°F\",\"device_class\":\"temperature\",\"unique_id\":\"" + deviceId + "_temp\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/temperature/config").c_str(), 0, true, tempPayload.c_str());
-
-    // Humidity
-    String humPayload = "{\"name\":\"Humidity\",\"state_topic\":\"" + _baseTopic + "weather/humidity\",\"unit_of_measurement\":\"%\",\"device_class\":\"humidity\",\"unique_id\":\"" + deviceId + "_hum\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/humidity/config").c_str(), 0, true, humPayload.c_str());
-
-    // Wind Speed
-    String windPayload = "{\"name\":\"Wind Speed\",\"state_topic\":\"" + _baseTopic + "weather/wind_speed\",\"unit_of_measurement\":\"mph\",\"device_class\":\"wind_speed\",\"unique_id\":\"" + deviceId + "_wind\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/wind_speed/config").c_str(), 0, true, windPayload.c_str());
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    // Wind Direction
-    String windDirPayload = "{\"name\":\"Wind Direction\",\"state_topic\":\"" + _baseTopic + "weather/wind_direction\",\"unique_id\":\"" + deviceId + "_winddir\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/wind_direction/config").c_str(), 0, true, windDirPayload.c_str());
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    // Weather Condition/Status
-    String statusPayload = "{\"name\":\"Weather Condition\",\"state_topic\":\"" + _baseTopic + "weather/status\",\"unique_id\":\"" + deviceId + "_cond\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/condition/config").c_str(), 0, true, statusPayload.c_str());
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    // City Name
-    String cityPayload = "{\"name\":\"City Name\",\"state_topic\":\"" + _baseTopic + "weather/city\",\"unique_id\":\"" + deviceId + "_city\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/city/config").c_str(), 0, true, cityPayload.c_str());
-    vTaskDelay(pdMS_TO_TICKS(50));
-
     // Connection Status
     String connPayload = "{\"name\":\"Connection Status\",\"state_topic\":\"" + _baseTopic + "status\",\"payload_on\":\"online\",\"payload_off\":\"offline\",\"device_class\":\"connectivity\",\"unique_id\":\"" + deviceId + "_conn\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/binary_sensor/" + deviceId + "/connection/config").c_str(), 0, true, connPayload.c_str());
@@ -215,48 +179,11 @@ void MqttManager::publishHADiscovery() {
     // Theme (Select)
     String themePayload = "{\"name\":\"Theme Flavor\",\"state_topic\":\"" + _baseTopic + "settings/theme\",\"command_topic\":\"" + _baseTopic + "command/theme\",\"options\":[\"Mocha\",\"Macchiato\",\"Frappe\",\"Latte\"],\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_theme\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/select/" + deviceId + "/theme/config").c_str(), 0, true, themePayload.c_str());
-    // Unit System (Select)
-    String unitsPayload = "{\"name\":\"Unit System\",\"state_topic\":\"" + _baseTopic + "settings/units\",\"command_topic\":\"" + _baseTopic + "command/units\",\"options\":[\"Imperial\",\"Metric\"],\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_units\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/select/" + deviceId + "/units/config").c_str(), 0, true, unitsPayload.c_str());
     // Screen Orientation (Select)
     String orientPayload = "{\"name\":\"Screen Orientation\",\"state_topic\":\"" + _baseTopic + "settings/screen_orientation\",\"command_topic\":\"" + _baseTopic + "command/screen_orientation\",\"options\":[\"Landscape\",\"Portrait\",\"Portrait Rev\",\"Landscape Rev\"],\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_orientation\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/select/" + deviceId + "/orientation/config").c_str(), 0, true, orientPayload.c_str());
-    // Update Interval (Number)
-    String updPayload = "{\"name\":\"Update Interval\",\"state_topic\":\"" + _baseTopic + "settings/update_interval\",\"command_topic\":\"" + _baseTopic + "command/update_interval\",\"min\":1,\"max\":120,\"unit_of_measurement\":\"min\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_updint\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/number/" + deviceId + "/update_interval/config").c_str(), 0, true, updPayload.c_str());
 
     vTaskDelay(pdMS_TO_TICKS(50));
-
-    // Local Sensor Enabled (Switch)
-    String locSensPayload = "{\"name\":\"Local Sensor\",\"state_topic\":\"" + _baseTopic + "settings/local_sensor\",\"command_topic\":\"" + _baseTopic + "command/local_sensor\",\"unique_id\":\"" + deviceId + "_loc_sens\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/switch/" + deviceId + "/local_sensor/config").c_str(), 0, true, locSensPayload.c_str());
-
-    // Local Sensor Type (Select)
-    String locSensTypePayload = "{\"name\":\"Local Sensor Type\",\"state_topic\":\"" + _baseTopic + "settings/local_sensor_type\",\"command_topic\":\"" + _baseTopic + "command/local_sensor_type\",\"options\":[\"DHT22\",\"SHT40\",\"DHT11\"],\"unique_id\":\"" + deviceId + "_loc_sens_typ\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/select/" + deviceId + "/local_sensor_type/config").c_str(), 0, true, locSensTypePayload.c_str());
-
-    // Local Sensor Update Interval (Number)
-    String locSensUpdPayload = "{\"name\":\"Local Sensor Update Interval\",\"state_topic\":\"" + _baseTopic + "settings/local_sensor_update_interval\",\"command_topic\":\"" + _baseTopic + "command/local_sensor_update_interval\",\"min\":1,\"max\":120,\"mode\":\"box\",\"unique_id\":\"" + deviceId + "_loc_sens_upd\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/number/" + deviceId + "/local_sensor_update_interval/config").c_str(), 0, true, locSensUpdPayload.c_str());
-
-    // Local Sensor Temp Offset (Number)
-    String locSensTempOffPayload = "{\"name\":\"Temperature Offset\",\"state_topic\":\"" + _baseTopic + "settings/local_sensor_temp_offset\",\"command_topic\":\"" + _baseTopic + "command/local_sensor_temp_offset\",\"min\":-10,\"max\":10,\"step\":0.1,\"mode\":\"box\",\"unique_id\":\"" + deviceId + "_loc_sens_toff\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/number/" + deviceId + "/local_sensor_temp_offset/config").c_str(), 0, true, locSensTempOffPayload.c_str());
-
-    // Local Sensor Hum Offset (Number)
-    String locSensHumOffPayload = "{\"name\":\"Humidity Offset\",\"state_topic\":\"" + _baseTopic + "settings/local_sensor_hum_offset\",\"command_topic\":\"" + _baseTopic + "command/local_sensor_hum_offset\",\"min\":-20,\"max\":20,\"step\":0.1,\"mode\":\"box\",\"unique_id\":\"" + deviceId + "_loc_sens_hoff\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/number/" + deviceId + "/local_sensor_hum_offset/config").c_str(), 0, true, locSensHumOffPayload.c_str());
-
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    // Local Temperature
-    String tempUnit = settings.getUnitSystem() == UNIT_IMPERIAL ? "°F" : "°C";
-    String locTempPayload = "{\"name\":\"Local Temperature\",\"state_topic\":\"" + _baseTopic + "sensor/local_temperature\",\"unit_of_measurement\":\"" + tempUnit + "\",\"device_class\":\"temperature\",\"state_class\":\"measurement\",\"unique_id\":\"" + deviceId + "_loc_temp\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/local_temperature/config").c_str(), 0, true, locTempPayload.c_str());
-
-    // Local Humidity
-    String locHumPayload = "{\"name\":\"Local Humidity\",\"state_topic\":\"" + _baseTopic + "sensor/local_humidity\",\"unit_of_measurement\":\"%\",\"device_class\":\"humidity\",\"state_class\":\"measurement\",\"unique_id\":\"" + deviceId + "_loc_hum\"," + deviceJson + "}";
-    _mqttClient.publish(("homeassistant/sensor/" + deviceId + "/local_humidity/config").c_str(), 0, true, locHumPayload.c_str());
 }
 
 void MqttManager::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
