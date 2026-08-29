@@ -21,10 +21,14 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
   - Built with the beautiful Catppuccin color palette (Mocha flavor by default).
 - **Long-Press Settings Navigation**:
   - Long-press anywhere on the clock display for 1.5 seconds to open the full-screen Settings screen.
-- **Auto-Brightness Control**:
-  - Uses the onboard LDR photoresistor (GPIO 34) with an Exponential Moving Average (EMA) filter driving LEDC PWM backlight control (GPIO 21).
+- **Backlight & Auto-Brightness Control**:
+  - Manual backlight level slider (10%–100%) or automatic brightness driven by onboard LDR photoresistor (GPIO 34) with LEDC PWM (GPIO 21).
 - **RGB LED Status Indicator**:
-  - Onboard RGB LED (GPIO 4/16/17) provides connectivity status feedback.
+  - Onboard RGB LED (GPIO 4/16/17) provides connectivity status feedback with configurable enabled toggle and brightness slider (10%–100%).
+- **Web Dashboard & REST API**:
+  - Catppuccin-themed web settings portal at `http://<DEVICE_IP>/` and dynamic JSON configuration endpoints (`/api/config`).
+- **MQTT & Home Assistant Integration**:
+  - Auto-discovery for Home Assistant, real-time telemetry, and bidirectional remote control.
 
 ## :hammer_and_wrench: Hardware Requirements
 
@@ -73,7 +77,7 @@ Default settings live in [`config/config.h`](config/config.h).
 **Timezone & NTP Server:**
 ```cpp
 #define TIMEZONE_DEFAULT "UTC0"
-#define NTP_SERVER_DEFAULT "pool.ntp.org"
+#define NTP_SERVER "pool.ntp.org"
 ```
 
 **Display Performance Tuning:**
@@ -100,8 +104,92 @@ Settings can be adjusted via the touchscreen interface:
 | Setting | Description |
 | :--- | :--- |
 | **Time Format** | Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes. |
-| **LED Enabled** | Enable or disable the onboard RGB LED status indicator. |
-| **LED Brightness** | Adjust the brightness of the RGB LED from 0% to 100%. |
+| **Screen Brightness** | Adjust the display backlight brightness (10% to 100%). |
+| **Status LED** | Enable or disable the onboard RGB LED status indicator. |
+| **LED Brightness** | Adjust the brightness of the RGB LED (10% to 100%). |
+
+---
+
+### Remote Web Settings & Configuration API
+
+When connected to Wi-Fi, the device hosts a web configuration portal at `http://<DEVICE_IP>/` and a REST API for dynamic remote configuration.
+
+**Get Configuration Settings:**
+```bash
+curl http://<DEVICE_IP>/api/config
+```
+
+Example JSON response:
+```json
+{
+  "use_24hr_format": false,
+  "brightness": 80,
+  "auto_brightness": true,
+  "timezone": "UTC0",
+  "theme_flavor": 1,
+  "screenshot_server_enabled": false,
+  "api_server_enabled": true,
+  "screen_orientation": 1,
+  "led_enabled": true,
+  "led_brightness": 100,
+  "mqtt_enabled": false,
+  "mqtt_server": "",
+  "mqtt_port": 1883,
+  "mqtt_user": "",
+  "mqtt_password": "",
+  "mqtt_base_topic": "cyd/",
+  "wifi_ssid": "Your_SSID",
+  "wifi_password": "Your_Password",
+  "screensaver_enabled": false,
+  "screensaver_timeout": 300000,
+  "sleep_schedule_enabled": false,
+  "sleep_start_time": "22:00",
+  "sleep_end_time": "07:00",
+  "static_ip_enabled": false,
+  "static_ip": "",
+  "static_gateway": "",
+  "static_subnet": "255.255.255.0",
+  "static_dns": "1.1.1.1",
+  "ap_password": "",
+  "ntp_server": "pool.ntp.org"
+}
+```
+
+**Update Configuration Settings:**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"brightness": 80, "led_enabled": true, "led_brightness": 50}' \
+  http://<DEVICE_IP>/api/config
+```
+
+---
+
+### :satellite: MQTT & Home Assistant Integration
+
+When MQTT is enabled in settings, the device connects to your MQTT broker and exposes entities for Home Assistant auto-discovery:
+
+#### State & Telemetry Topics
+
+| Topic | Description | Values / Example |
+| :--- | :--- | :--- |
+| `<base_topic>status` | Connection availability (LWT) | `online` / `offline` |
+| `<base_topic>system/uptime` | System uptime in seconds | `3600` |
+| `<base_topic>system/free_heap` | Free heap memory (bytes) | `184320` |
+| `<base_topic>system/wifi_rssi` | Wi-Fi RSSI (dBm) | `-55` |
+| `<base_topic>system/ip` | Device IP address | `192.168.1.100` |
+| `<base_topic>system/version` | Firmware version | `v0.1.0` |
+| `<base_topic>system/mac` | MAC address | `AA:BB:CC:DD:EE:FF` |
+| `<base_topic>settings/use_24hr_format` | 24-hour format switch | `ON` / `OFF` |
+| `<base_topic>settings/led_enabled` | Status LED switch | `ON` / `OFF` |
+| `<base_topic>settings/led_brightness` | Status LED brightness percentage | `10`–`100` |
+
+#### Remote Command Topics
+
+| Topic | Payload | Description |
+| :--- | :--- | :--- |
+| `<base_topic>command/use_24hr_format` | `ON` / `OFF` / `1` / `0` | Toggles 12/24-hour display format. |
+| `<base_topic>command/led_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the status RGB LED. |
+| `<base_topic>command/led_brightness` | `10`–`100` | Adjusts the status RGB LED brightness percentage. |
 
 ---
 
