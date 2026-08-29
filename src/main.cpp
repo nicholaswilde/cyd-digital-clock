@@ -72,6 +72,16 @@ void setup() {
             if (pct > 100) pct = 100;
             settings.setLedBrightness((pct * 255) / 100);
             settings.setChanged();
+        } else if (topic.endsWith("command/auto_brightness")) {
+            settings.setAutoBrightness(payload == "ON");
+            settings.setChanged();
+        } else if (topic.endsWith("command/brightness")) {
+            int pct = payload.toInt();
+            if (pct < 10) pct = 10;
+            if (pct > 100) pct = 100;
+            settings.setBrightness(pct);
+            settings.setAutoBrightness(false); // Manual override disables auto
+            settings.setChanged();
         }
     });
     mqtt.begin();
@@ -108,6 +118,15 @@ void loop() {
     lv_timer_handler();
     ui_update();
     screensaver.update(currentMillis);
+    
+    if (!screensaver.isActive() && settings.getAutoBrightness()) {
+        static unsigned long lastBacklightUpdate = 0;
+        if (currentMillis - lastBacklightUpdate >= 1000) {
+            lastBacklightUpdate = currentMillis;
+            uint16_t ldrRaw = analogRead(LDR_PIN);
+            backlight.update(ldrRaw);
+        }
+    }
     // ScreenshotManager::update();
 
     // Network updates
@@ -119,7 +138,9 @@ void loop() {
         Serial.println("[System] Applying updated settings...");
         
         ui_set_theme(settings.getThemeFlavor());
-        backlight.setManualBrightness(settings.getBrightness());
+        if (!settings.getAutoBrightness()) {
+            backlight.setManualBrightness(settings.getBrightness());
+        }
         led.setEnabled(settings.getLedEnabled());
         led.setBrightness(settings.getLedBrightness());
         
@@ -158,5 +179,7 @@ void loop() {
         mqtt.publish("settings/use_24hr_format", settings.getUse24HourFormat() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_enabled", settings.getLedEnabled() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
+        mqtt.publish("settings/auto_brightness", settings.getAutoBrightness() ? "ON" : "OFF", true);
+        mqtt.publish("settings/brightness", String(settings.getBrightness()).c_str(), true);
     }
 }

@@ -62,7 +62,9 @@ uint8_t BacklightManager::update(uint16_t rawAdcValue) {
     }
 
     // 2. Map Filtered Light to Duty Cycle
-    float lightPercent = (_filteredLight / 4095.0f) * 100.0f;
+    // Invert the reading: 0 = brightest (max light), 4095 = darkest
+    float invertedLight = 4095.0f - _filteredLight;
+    float lightPercent = (invertedLight / 4095.0f) * 100.0f;
     _currentDuty = percentToDuty(lightPercent);
 
 #ifndef NATIVE_TEST

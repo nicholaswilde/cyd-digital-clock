@@ -7,6 +7,7 @@ lv_obj_t* ui_ScreenMain;
 lv_obj_t* ui_LabelTime;
 lv_obj_t* ui_ScreenSettings;
 
+static lv_obj_t* ui_SwitchAutoBrightness = nullptr;
 static lv_obj_t* ui_Switch24Hour = nullptr;
 static lv_obj_t* ui_BrightnessSlider = nullptr;
 static lv_obj_t* ui_LedSwitch = nullptr;
@@ -42,6 +43,13 @@ static void switch_24hr_event_cb(lv_event_t * e) {
     }
 }
 
+static void switch_auto_bright_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        settings.setAutoBrightness(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
+        settings.setChanged();
+    }
+}
+
 static void brightness_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
         lv_obj_t * slider = lv_event_get_target(e);
@@ -49,6 +57,9 @@ static void brightness_event_cb(lv_event_t * e) {
         settings.setBrightness(val);
         // Force manual brightness (disable auto)
         settings.setAutoBrightness(false);
+        if (ui_SwitchAutoBrightness) {
+            lv_obj_clear_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
+        }
         settings.setChanged();
         
         lv_obj_t * label = (lv_obj_t *)lv_event_get_user_data(e);
@@ -142,14 +153,32 @@ void ui_init(void) {
     if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
     lv_obj_add_event_cb(ui_Switch24Hour, switch_24hr_event_cb, LV_EVENT_ALL, NULL);
 
+    // 1.5 Auto Brightness
+    lv_obj_t* row1_5 = lv_obj_create(cont);
+    lv_obj_set_width(row1_5, lv_pct(90));
+    lv_obj_set_height(row1_5, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row1_5, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row1_5, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row1_5, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row1_5, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_auto = lv_label_create(row1_5);
+    lv_label_set_text(label_auto, "Auto Brightness");
+    lv_obj_set_style_text_color(label_auto, lv_color_hex(current_colors.text), LV_PART_MAIN);
+
+    ui_SwitchAutoBrightness = lv_switch_create(row1_5);
+    if (settings.getAutoBrightness()) lv_obj_add_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
+    lv_obj_add_event_cb(ui_SwitchAutoBrightness, switch_auto_bright_event_cb, LV_EVENT_ALL, NULL);
+
     // 2. Screen Brightness
     lv_obj_t* row2 = lv_obj_create(cont);
     lv_obj_set_width(row2, lv_pct(90));
     lv_obj_set_height(row2, LV_SIZE_CONTENT);
     lv_obj_set_style_bg_opa(row2, 0, LV_PART_MAIN);
     lv_obj_set_style_border_width(row2, 0, LV_PART_MAIN);
-    lv_obj_set_flex_flow(row2, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(row2, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_flow(row2, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(row2, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_row(row2, 10, LV_PART_MAIN);
 
     lv_obj_t* label_bright = lv_label_create(row2);
     char slider_buf[32];
@@ -159,7 +188,7 @@ void ui_init(void) {
 
     ui_BrightnessSlider = lv_slider_create(row2);
     lv_slider_set_range(ui_BrightnessSlider, 10, 100);
-    lv_obj_set_width(ui_BrightnessSlider, 140);
+    lv_obj_set_width(ui_BrightnessSlider, lv_pct(100));
     lv_slider_set_value(ui_BrightnessSlider, settings.getBrightness(), LV_ANIM_OFF);
     lv_obj_add_event_cb(ui_BrightnessSlider, brightness_event_cb, LV_EVENT_VALUE_CHANGED, label_bright);
 
@@ -185,8 +214,9 @@ void ui_init(void) {
     lv_obj_set_height(row4, LV_SIZE_CONTENT);
     lv_obj_set_style_bg_opa(row4, 0, LV_PART_MAIN);
     lv_obj_set_style_border_width(row4, 0, LV_PART_MAIN);
-    lv_obj_set_flex_flow(row4, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(row4, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_flow(row4, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(row4, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_row(row4, 10, LV_PART_MAIN);
 
     lv_obj_t* label_led_bright = lv_label_create(row4);
     int led_pct = (settings.getLedBrightness() * 100) / 255;
@@ -196,7 +226,7 @@ void ui_init(void) {
 
     ui_LedBrightnessSlider = lv_slider_create(row4);
     lv_slider_set_range(ui_LedBrightnessSlider, 10, 100);
-    lv_obj_set_width(ui_LedBrightnessSlider, 140);
+    lv_obj_set_width(ui_LedBrightnessSlider, lv_pct(100));
     lv_slider_set_value(ui_LedBrightnessSlider, led_pct, LV_ANIM_OFF);
     lv_obj_add_event_cb(ui_LedBrightnessSlider, led_brightness_event_cb, LV_EVENT_VALUE_CHANGED, label_led_bright);
     
@@ -225,6 +255,13 @@ void ui_sync_toggles(void) {
         if (ui_checked != settings.getUse24HourFormat()) {
             if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
             else lv_obj_clear_state(ui_Switch24Hour, LV_STATE_CHECKED);
+        }
+    }
+    if (ui_SwitchAutoBrightness) {
+        bool ui_checked = lv_obj_has_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
+        if (ui_checked != settings.getAutoBrightness()) {
+            if (settings.getAutoBrightness()) lv_obj_add_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
+            else lv_obj_clear_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
         }
     }
     if (ui_BrightnessSlider) {

@@ -2,6 +2,7 @@
 
 ## Codebase Lookup Preference
 - Before performing any internet/web search for display, touchscreen, or hardware solutions for this ESP32 Cheap Yellow Display (CYD) project, **always search the local photo frame repository first** at `/home/nicholas/git/nicholaswilde/cyd-photo-frame/` for working reference code.
+- **Always search the local flight radar repository second** at `/home/nicholas/git/nicholaswilde/cyd-flight-radar/` for working reference code and examples on how to implement features.
 
 ## Build and Test Commands
 - Build firmware: `pio run -e cyd_28r` or `pio run -e cyd_35c`

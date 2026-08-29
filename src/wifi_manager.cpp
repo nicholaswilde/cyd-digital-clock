@@ -63,7 +63,7 @@ void WifiManager::begin() {
     WiFi.setTxPower(WIFI_POWER_11dBm);
 
     _improv = new ImprovWiFi(&Serial);
-    _improv->setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CYD-Weather-Station", "1.0", "CYD Weather Station", "http://{LOCAL_IPV4}");
+    _improv->setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32, "CYD-Digital-Clock", "1.0", "CYD Digital Clock", "http://{LOCAL_IPV4}");
     
     _improv->setCustomConnectWiFi([](const char *ssid, const char *password) {
         Serial.printf("\n[WiFi] Improv connecting to %s...\n", ssid);

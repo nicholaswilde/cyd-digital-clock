@@ -38,6 +38,16 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
 
 ## :rocket: Getting Started
 
+### Zero-Configuration Wi-Fi Setup (Improv Wi-Fi)
+
+This project supports **Improv Wi-Fi** over Serial. You can provision Wi-Fi credentials to the device directly from a modern web browser (Chrome, Edge, Opera) via WebSerial without needing to hardcode secrets or join an access point.
+
+1. Connect your CYD to your computer via USB.
+2. Go to [Improv Wi-Fi Web](https://www.improv-wifi.com/).
+3. Click "Connect Device" and select the CYD serial port.
+4. Enter your Wi-Fi credentials when prompted.
+5. The device will save them, connect, and report its IP address back to the browser.
+
 ### 1. Build from Source
 
 #### Secrets Setup
