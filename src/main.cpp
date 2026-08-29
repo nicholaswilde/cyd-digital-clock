@@ -76,6 +76,20 @@ void setup() {
             if (pct > 100) pct = 100;
             settings.setLedBrightness((pct * 255) / 100);
             settings.setChanged();
+                } else if (topic.endsWith("command/theme")) {
+            int theme = 1;
+            if (payload == "Macchiato") theme = 2;
+            else if (payload == "Frappe") theme = 3;
+            else if (payload == "Latte") theme = 4;
+            settings.setThemeFlavor(theme);
+            settings.setChanged();
+        } else if (topic.endsWith("command/screen_orientation")) {
+            int orient = 1;
+            if (payload == "Portrait Rev") orient = 0;
+            else if (payload == "Portrait") orient = 2;
+            else if (payload == "Landscape Rev") orient = 3;
+            settings.setScreenOrientation(orient);
+            settings.setChanged();
         } else if (topic.endsWith("command/auto_brightness")) {
             settings.setAutoBrightness(payload == "ON");
             settings.setChanged();
@@ -204,5 +218,21 @@ void loop() {
         mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
         mqtt.publish("settings/auto_brightness", settings.getAutoBrightness() ? "ON" : "OFF", true);
         mqtt.publish("settings/brightness", String(settings.getBrightness()).c_str(), true);
+        
+        String themeStr = "Mocha";
+        switch (settings.getThemeFlavor()) {
+            case 2: themeStr = "Macchiato"; break;
+            case 3: themeStr = "Frappe"; break;
+            case 4: themeStr = "Latte"; break;
+        }
+        mqtt.publish("settings/theme", themeStr.c_str(), true);
+
+        String orientStr = "Landscape";
+        switch (settings.getScreenOrientation()) {
+            case 0: orientStr = "Portrait Rev"; break;
+            case 2: orientStr = "Portrait"; break;
+            case 3: orientStr = "Landscape Rev"; break;
+        }
+        mqtt.publish("settings/screen_orientation", orientStr.c_str(), true);
     }
 }

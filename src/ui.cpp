@@ -16,11 +16,47 @@ static lv_obj_t* ui_LedBrightnessSlider = nullptr;
 
 CatppuccinColors current_colors = getCatppuccinFlavor(CATPPUCCIN_MOCHA);
 
+
+static void theme_dropdown_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t * dropdown = lv_event_get_target(e);
+        uint16_t opt = lv_dropdown_get_selected(dropdown);
+        settings.setThemeFlavor(opt + 1); // 1 = Mocha, 2 = Macchiato, 3 = Frappe, 4 = Latte
+        settings.setChanged();
+    }
+}
+
 void ui_set_theme(int theme_id) {
     current_colors = getCatppuccinFlavor(theme_id);
+    
+    bool on_settings = false;
+    if (lv_scr_act() == ui_ScreenSettings) {
+        on_settings = true;
+    }
+
     if (ui_ScreenMain) {
-        lv_obj_set_style_bg_color(ui_ScreenMain, lv_color_hex(current_colors.mantle), LV_PART_MAIN);
-        lv_obj_set_style_text_color(ui_ScreenMain, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_del(ui_ScreenMain);
+        ui_ScreenMain = nullptr;
+    }
+    if (ui_ScreenSettings) {
+        lv_obj_del(ui_ScreenSettings);
+        ui_ScreenSettings = nullptr;
+    }
+    
+    // Backup old pointers to avoid dangling usage before they are initialized
+    ui_LabelTime = nullptr;
+    ui_SwitchAutoBrightness = nullptr;
+    ui_Switch24Hour = nullptr;
+    ui_SwitchShowSeconds = nullptr;
+    ui_BrightnessSlider = nullptr;
+    ui_LedSwitch = nullptr;
+    ui_LedBrightnessSlider = nullptr;
+
+    ui_init(); 
+    ui_sync_toggles();
+
+    if (on_settings) {
+        lv_scr_load_anim(ui_ScreenSettings, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
     }
 }
 
@@ -143,6 +179,28 @@ void ui_init(void) {
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_row(cont, 15, LV_PART_MAIN);
+
+    // 0. Theme Flavor
+    lv_obj_t* row0 = lv_obj_create(cont);
+    lv_obj_set_width(row0, lv_pct(90));
+    lv_obj_set_height(row0, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row0, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row0, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row0, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row0, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_theme = lv_label_create(row0);
+    lv_label_set_text(label_theme, "Theme");
+    lv_obj_set_style_text_color(label_theme, lv_color_hex(current_colors.text), LV_PART_MAIN);
+
+    lv_obj_t* theme_dropdown = lv_dropdown_create(row0);
+    lv_dropdown_set_options(theme_dropdown, "Mocha\nMacchiato\nFrappe\nLatte");
+    lv_dropdown_set_selected(theme_dropdown, settings.getThemeFlavor() - 1);
+    lv_obj_add_event_cb(theme_dropdown, theme_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_width(theme_dropdown, 130);
+    lv_obj_set_style_bg_color(theme_dropdown, lv_color_hex(current_colors.crust), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(theme_dropdown, lv_color_hex(current_colors.text), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(theme_dropdown, lv_color_hex(current_colors.overlay), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 1. 24 Hour Format
     lv_obj_t* row1 = lv_obj_create(cont);
