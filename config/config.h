@@ -26,6 +26,10 @@
 
 #include "catppuccin.h"
 
+// Default Catppuccin Theme Flavor
+// Options: CATPPUCCIN_MOCHA (1), CATPPUCCIN_MACCHIATO (2), CATPPUCCIN_FRAPPE (3), CATPPUCCIN_LATTE (4)
+#define DEFAULT_THEME_FLAVOR CATPPUCCIN_MOCHA
+
 extern int getCurrentThemeFlavor();
 
 #define COLOR_BASE         (getCatppuccinFlavor(getCurrentThemeFlavor()).base)

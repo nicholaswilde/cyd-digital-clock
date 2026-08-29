@@ -35,6 +35,7 @@ void test_settings_default_values(void) {
 #endif
     TEST_ASSERT_EQUAL(DEFAULT_USE_24HOUR_FORMAT, settings.getUse24HourFormat());
     TEST_ASSERT_EQUAL(DEFAULT_SHOW_SECONDS, settings.getShowSeconds());
+    TEST_ASSERT_EQUAL(DEFAULT_THEME_FLAVOR, settings.getThemeFlavor());
 }
 
 void test_settings_save_and_load(void) {
@@ -59,6 +60,7 @@ void test_settings_save_and_load(void) {
     settings.setStaticSubnet("255.255.0.0");
     settings.setStaticDns("8.8.8.8");
     settings.setApPassword("new_ap_pass");
+    settings.setThemeFlavor(CATPPUCCIN_LATTE);
     
     // Create new instance to simulate re-reading from preferences
     SettingsManager settings_new;
@@ -66,6 +68,7 @@ void test_settings_save_and_load(void) {
     
     TEST_ASSERT_EQUAL(false, settings_new.getUse24HourFormat());
     TEST_ASSERT_EQUAL(false, settings_new.getShowSeconds());
+    TEST_ASSERT_EQUAL(CATPPUCCIN_LATTE, settings_new.getThemeFlavor());
     TEST_ASSERT_EQUAL(50, settings_new.getBrightness());
     TEST_ASSERT_EQUAL(true, settings_new.getAutoBrightness());
     TEST_ASSERT_EQUAL_STRING("EST5EDT,M3.2.0,M11.1.0", settings_new.getTimezone().c_str());
