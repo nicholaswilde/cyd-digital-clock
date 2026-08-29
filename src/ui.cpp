@@ -331,78 +331,53 @@ void hideScreenSaver(void) {}
 static lv_obj_t* ui_ScreenAP = nullptr;
 static lv_obj_t* ui_LabelAPSSID = nullptr;
 
+static void ap_restart_btn_event_cb(lv_event_t * e) {
+    ESP.restart();
+}
+
 void ui_show_ap_mode(const char* apSSID) {
     if (!ui_ScreenAP) {
         ui_ScreenAP = lv_obj_create(NULL);
         lv_obj_set_style_bg_color(ui_ScreenAP, lv_color_hex(current_colors.base), LV_PART_MAIN);
 
-        int screen_w = lv_disp_get_hor_res(NULL);
-        bool isLandscape = (screen_w > 240);
-        int header_h = isLandscape ? 45 : 60;
-        
-        // Header Bar Container
-        lv_obj_t* header = lv_obj_create(ui_ScreenAP);
-        lv_obj_set_size(header, screen_w, header_h);
-        lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
-        lv_obj_set_style_bg_color(header, lv_color_hex(current_colors.crust), LV_PART_MAIN);
-        lv_obj_set_style_border_width(header, 0, LV_PART_MAIN);
-        lv_obj_set_style_radius(header, 0, LV_PART_MAIN);
-        lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+        // Title label
+        lv_obj_t * lbl_title = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(lbl_title, "CYD Digital Clock");
+        lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_20, 0);
+        lv_obj_set_style_text_color(lbl_title, lv_color_hex(current_colors.text), 0);
+        lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 10);
 
-        // Header Title
-        lv_obj_t* header_title = lv_label_create(header);
-        lv_label_set_text(header_title, isLandscape ? "CYD Digital Clock" : "CYD Digital\nClock");
-        lv_obj_set_style_text_color(header_title, lv_color_hex(current_colors.header_text), LV_PART_MAIN);
-        lv_obj_align(header_title, LV_ALIGN_LEFT_MID, 10, 0);
+        // Status label
+        lv_obj_t * lbl_status = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(lbl_status, "Captive Portal Active");
+        lv_obj_set_style_text_color(lbl_status, lv_color_hex(current_colors.mauve), 0);
+        lv_obj_align(lbl_status, LV_ALIGN_TOP_MID, 0, 50);
 
-        // Header Right-Side Status Area
-        lv_obj_t * header_right_area = lv_obj_create(header);
-        lv_obj_set_size(header_right_area, LV_SIZE_CONTENT, 30);
-        lv_obj_align(header_right_area, LV_ALIGN_RIGHT_MID, -5, 0);
-        lv_obj_set_flex_flow(header_right_area, LV_FLEX_FLOW_ROW_REVERSE);
-        lv_obj_set_flex_align(header_right_area, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-        lv_obj_set_style_bg_opa(header_right_area, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_border_width(header_right_area, 0, LV_PART_MAIN);
-        lv_obj_set_style_pad_all(header_right_area, 0, LV_PART_MAIN);
-        lv_obj_set_style_pad_gap(header_right_area, 8, LV_PART_MAIN);
-        lv_obj_clear_flag(header_right_area, LV_OBJ_FLAG_SCROLLABLE);
+        // Info details
+        ui_LabelAPSSID = lv_label_create(ui_ScreenAP);
+        lv_obj_set_style_text_align(ui_LabelAPSSID, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.text), 0);
+        lv_obj_align(ui_LabelAPSSID, LV_ALIGN_CENTER, 0, 10);
 
-        lv_obj_t* wifi_icon = lv_label_create(header_right_area);
-        lv_label_set_text(wifi_icon, LV_SYMBOL_WIFI);
-        lv_obj_set_style_text_color(wifi_icon, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
+        // Restart Button
+        lv_obj_t * btn_restart = lv_btn_create(ui_ScreenAP);
+        lv_obj_set_size(btn_restart, 200, 50);
+        lv_obj_align(btn_restart, LV_ALIGN_BOTTOM_MID, 0, -20);
+        lv_obj_set_style_bg_color(btn_restart, lv_color_hex(current_colors.red), 0);
+        lv_obj_add_event_cb(btn_restart, ap_restart_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
-        lv_obj_t* status_lbl = lv_label_create(header_right_area);
-        lv_label_set_text(status_lbl, "AP Active");
-        lv_obj_set_style_text_color(status_lbl, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
-
-        // Main content container
-        lv_obj_t* content = lv_obj_create(ui_ScreenAP);
-        lv_obj_set_size(content, screen_w, lv_disp_get_ver_res(NULL) - header_h);
-        lv_obj_align(content, LV_ALIGN_BOTTOM_MID, 0, 0);
-        lv_obj_set_style_bg_opa(content, LV_OPA_TRANSP, LV_PART_MAIN);
-        lv_obj_set_style_border_width(content, 0, LV_PART_MAIN);
-        lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
-        lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-        lv_obj_set_style_pad_gap(content, 20, LV_PART_MAIN);
-
-        lv_obj_t* setup_lbl = lv_label_create(content);
-        lv_label_set_text(setup_lbl, "Setup");
-        lv_obj_set_style_text_color(setup_lbl, lv_color_hex(current_colors.peach), LV_PART_MAIN);
-        lv_obj_set_style_text_font(setup_lbl, &lv_font_montserrat_48, LV_PART_MAIN);
-
-        lv_obj_t* ip_lbl = lv_label_create(content);
-        lv_label_set_text(ip_lbl, "192.168.4.1");
-        lv_obj_set_style_text_color(ip_lbl, lv_color_hex(current_colors.blue), LV_PART_MAIN);
-        lv_obj_set_style_text_font(ip_lbl, &lv_font_montserrat_28, LV_PART_MAIN);
-
-        ui_LabelAPSSID = lv_label_create(content);
-        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.lavender), LV_PART_MAIN);
-        lv_obj_set_style_text_font(ui_LabelAPSSID, &lv_font_montserrat_20, LV_PART_MAIN);
+        lv_obj_t * lbl_btn = lv_label_create(btn_restart);
+        lv_label_set_text(lbl_btn, "Restart Device");
+        lv_obj_set_style_text_color(lbl_btn, lv_color_hex(current_colors.base), 0);
+        lv_obj_center(lbl_btn);
     }
     
     if (ui_LabelAPSSID) {
-        lv_label_set_text(ui_LabelAPSSID, apSSID);
+        char infoBuf[256];
+        snprintf(infoBuf, sizeof(infoBuf), 
+                 "SSID: %s\nIP: 192.168.4.1\n\nConnect your device to setup WiFi", 
+                 apSSID);
+        lv_label_set_text(ui_LabelAPSSID, infoBuf);
     }
 
     lv_scr_load(ui_ScreenAP);
