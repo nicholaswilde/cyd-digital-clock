@@ -178,7 +178,7 @@ void ui_init(void) {
     lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(cont, 15, LV_PART_MAIN);
+    lv_obj_set_style_pad_row(cont, 8, LV_PART_MAIN);
 
     // 0. Theme Flavor
     lv_obj_t* row0 = lv_obj_create(cont);
@@ -261,7 +261,7 @@ void ui_init(void) {
     lv_obj_set_style_border_width(row2, 0, LV_PART_MAIN);
     lv_obj_set_flex_flow(row2, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(row2, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(row2, 10, LV_PART_MAIN);
+    lv_obj_set_style_pad_row(row2, 5, LV_PART_MAIN);
 
     lv_obj_t* label_bright = lv_label_create(row2);
     char slider_buf[32];
@@ -299,7 +299,7 @@ void ui_init(void) {
     lv_obj_set_style_border_width(row4, 0, LV_PART_MAIN);
     lv_obj_set_flex_flow(row4, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(row4, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(row4, 10, LV_PART_MAIN);
+    lv_obj_set_style_pad_row(row4, 5, LV_PART_MAIN);
 
     lv_obj_t* label_led_bright = lv_label_create(row4);
     int led_pct = (settings.getLedBrightness() * 100) / 255;
