@@ -34,6 +34,7 @@ void test_settings_default_values(void) {
     TEST_ASSERT_EQUAL_STRING("", settings.getApPassword().c_str());
 #endif
     TEST_ASSERT_EQUAL(DEFAULT_USE_24HOUR_FORMAT, settings.getUse24HourFormat());
+    TEST_ASSERT_EQUAL(DEFAULT_SHOW_SECONDS, settings.getShowSeconds());
 }
 
 void test_settings_save_and_load(void) {
@@ -42,6 +43,7 @@ void test_settings_save_and_load(void) {
     
     // Modify settings
     settings.setUse24HourFormat(false);
+    settings.setShowSeconds(false);
     settings.setBrightness(50);
     settings.setAutoBrightness(true);
     settings.setTimezone("EST5EDT,M3.2.0,M11.1.0");
@@ -63,6 +65,7 @@ void test_settings_save_and_load(void) {
     settings_new.begin();
     
     TEST_ASSERT_EQUAL(false, settings_new.getUse24HourFormat());
+    TEST_ASSERT_EQUAL(false, settings_new.getShowSeconds());
     TEST_ASSERT_EQUAL(50, settings_new.getBrightness());
     TEST_ASSERT_EQUAL(true, settings_new.getAutoBrightness());
     TEST_ASSERT_EQUAL_STRING("EST5EDT,M3.2.0,M11.1.0", settings_new.getTimezone().c_str());

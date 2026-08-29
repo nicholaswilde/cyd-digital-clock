@@ -9,6 +9,7 @@ lv_obj_t* ui_ScreenSettings;
 
 static lv_obj_t* ui_SwitchAutoBrightness = nullptr;
 static lv_obj_t* ui_Switch24Hour = nullptr;
+static lv_obj_t* ui_SwitchShowSeconds = nullptr;
 static lv_obj_t* ui_BrightnessSlider = nullptr;
 static lv_obj_t* ui_LedSwitch = nullptr;
 static lv_obj_t* ui_LedBrightnessSlider = nullptr;
@@ -39,6 +40,13 @@ static void settings_back_event_cb(lv_event_t * e) {
 static void switch_24hr_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
         settings.setUse24HourFormat(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
+        settings.setChanged();
+    }
+}
+
+static void switch_show_seconds_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        settings.setShowSeconds(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
         settings.setChanged();
     }
 }
@@ -153,6 +161,23 @@ void ui_init(void) {
     if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
     lv_obj_add_event_cb(ui_Switch24Hour, switch_24hr_event_cb, LV_EVENT_ALL, NULL);
 
+    // 1.2 Show Seconds
+    lv_obj_t* row1_2 = lv_obj_create(cont);
+    lv_obj_set_width(row1_2, lv_pct(90));
+    lv_obj_set_height(row1_2, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row1_2, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row1_2, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row1_2, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row1_2, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_show_secs = lv_label_create(row1_2);
+    lv_label_set_text(label_show_secs, "Show Seconds");
+    lv_obj_set_style_text_color(label_show_secs, lv_color_hex(current_colors.text), LV_PART_MAIN);
+
+    ui_SwitchShowSeconds = lv_switch_create(row1_2);
+    if (settings.getShowSeconds()) lv_obj_add_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
+    lv_obj_add_event_cb(ui_SwitchShowSeconds, switch_show_seconds_event_cb, LV_EVENT_ALL, NULL);
+
     // 1.5 Auto Brightness
     lv_obj_t* row1_5 = lv_obj_create(cont);
     lv_obj_set_width(row1_5, lv_pct(90));
@@ -255,6 +280,13 @@ void ui_sync_toggles(void) {
         if (ui_checked != settings.getUse24HourFormat()) {
             if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
             else lv_obj_clear_state(ui_Switch24Hour, LV_STATE_CHECKED);
+        }
+    }
+    if (ui_SwitchShowSeconds) {
+        bool ui_checked = lv_obj_has_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
+        if (ui_checked != settings.getShowSeconds()) {
+            if (settings.getShowSeconds()) lv_obj_add_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
+            else lv_obj_clear_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
         }
     }
     if (ui_SwitchAutoBrightness) {

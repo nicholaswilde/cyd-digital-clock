@@ -46,6 +46,9 @@ extern int getCurrentThemeFlavor();
 // Choose Time Format (12 vs 24 hour)
 #define DEFAULT_USE_24HOUR_FORMAT true
 
+// Show seconds on the clock
+#define DEFAULT_SHOW_SECONDS true
+
 // Auto Backlight Settings
 #define USE_LDR_AUTO_BACKLIGHT false
 

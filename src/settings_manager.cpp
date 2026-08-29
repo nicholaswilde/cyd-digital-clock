@@ -41,6 +41,7 @@ SettingsManager::SettingsManager() {
 #endif
     _ntpServer = NTP_SERVER;
     _use24HourFormat = DEFAULT_USE_24HOUR_FORMAT;
+    _showSeconds = DEFAULT_SHOW_SECONDS;
     _sleepScheduleEnabled = DEFAULT_SLEEP_SCHEDULE_ENABLED;
     _sleepStartTime = DEFAULT_SLEEP_START_TIME;
     _sleepEndTime = DEFAULT_SLEEP_END_TIME;
@@ -81,6 +82,7 @@ void SettingsManager::begin() {
 #endif
     _ntpServer = prefs.getString("ntp_srv", NTP_SERVER);
     _use24HourFormat = prefs.getBool("use_24hr", DEFAULT_USE_24HOUR_FORMAT);
+    _showSeconds = prefs.getBool("show_secs", DEFAULT_SHOW_SECONDS);
     _sleepScheduleEnabled = prefs.getBool("sleep_sched", DEFAULT_SLEEP_SCHEDULE_ENABLED);
     _sleepStartTime = prefs.getString("sleep_start", DEFAULT_SLEEP_START_TIME);
     _sleepEndTime = prefs.getString("sleep_end", DEFAULT_SLEEP_END_TIME);
@@ -483,6 +485,17 @@ void SettingsManager::setUse24HourFormat(bool use24Hour) {
         Preferences prefs;
         prefs.begin("settings", false);
         prefs.putBool("use_24hr", _use24HourFormat);
+        prefs.end();
+    }
+}
+
+bool SettingsManager::getShowSeconds() const { return _showSeconds; }
+void SettingsManager::setShowSeconds(bool showSeconds) {
+    if (_showSeconds != showSeconds) {
+        _showSeconds = showSeconds;
+        Preferences prefs;
+        prefs.begin("settings", false);
+        prefs.putBool("show_secs", _showSeconds);
         prefs.end();
     }
 }

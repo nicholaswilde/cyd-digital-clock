@@ -500,6 +500,7 @@ void WifiManager::startWebServer() {
         }
         DynamicJsonDocument doc(2048);
         doc["use_24hr_format"] = settings.getUse24HourFormat();
+        doc["show_seconds"] = settings.getShowSeconds();
         doc["brightness"] = settings.getBrightness();
         doc["auto_brightness"] = settings.getAutoBrightness();
         doc["timezone"] = settings.getTimezone();
@@ -552,6 +553,7 @@ void WifiManager::startWebServer() {
             return;
         }
         if (doc.containsKey("use_24hr_format")) settings.setUse24HourFormat(doc["use_24hr_format"]);
+        if (doc.containsKey("show_seconds")) settings.setShowSeconds(doc["show_seconds"]);
         if (doc.containsKey("brightness")) settings.setBrightness(doc["brightness"]);
         if (doc.containsKey("auto_brightness")) settings.setAutoBrightness(doc["auto_brightness"]);
         if (doc.containsKey("timezone")) settings.setTimezone(doc["timezone"].as<String>());
@@ -743,6 +745,7 @@ void WifiManager::handleSettings() {
     
     html.replace("%BRIGHTNESS%", String(settings.getBrightness()));
     html.replace("%AUTO_BRIGHTNESS%", settings.getAutoBrightness() ? "checked" : "");
+    html.replace("%SHOW_SECONDS%", settings.getShowSeconds() ? "checked" : "");
     html.replace("%SCREENSAVER_ENABLED%", settings.getScreensaverEnabled() ? "checked" : "");
     html.replace("%SLEEP_SCHEDULE_ENABLED%", settings.getSleepScheduleEnabled() ? "checked" : "");
     html.replace("%SLEEP_START_TIME%", settings.getSleepStartTime());
@@ -801,6 +804,7 @@ void WifiManager::handleSettingsSave() {
         settings.setLedBrightness((pct * 255) / 100);
     }
     settings.setAutoBrightness(_webServer->hasArg("auto_brightness"));
+    settings.setShowSeconds(_webServer->hasArg("show_seconds"));
     settings.setScreensaverEnabled(_webServer->hasArg("screensaver_enabled"));
     if (_webServer->hasArg("screensaver_timeout")) settings.setScreensaverTimeout(_webServer->arg("screensaver_timeout").toInt() * 60000);
     settings.setSleepScheduleEnabled(_webServer->hasArg("sleep_schedule_enabled"));

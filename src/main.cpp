@@ -64,6 +64,9 @@ void setup() {
         if (topic.endsWith("command/use_24hr_format")) {
             settings.setUse24HourFormat(payload == "ON");
             settings.setChanged();
+        } else if (topic.endsWith("command/show_seconds")) {
+            settings.setShowSeconds(payload == "ON");
+            settings.setChanged();
         } else if (topic.endsWith("command/led_enabled")) {
             settings.setLedEnabled(payload == "ON");
             settings.setChanged();
@@ -100,9 +103,17 @@ void updateTimeUI() {
     if (getLocalTime(&timeinfo, 10)) {
         char timeStr[12]; // HH:MM:SS AM\0
         if (settings.getUse24HourFormat()) {
-            strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeinfo);
+            if (settings.getShowSeconds()) {
+                strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeinfo);
+            } else {
+                strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+            }
         } else {
-            strftime(timeStr, sizeof(timeStr), "%I:%M:%S %p", &timeinfo);
+            if (settings.getShowSeconds()) {
+                strftime(timeStr, sizeof(timeStr), "%I:%M:%S %p", &timeinfo);
+            } else {
+                strftime(timeStr, sizeof(timeStr), "%I:%M %p", &timeinfo);
+            }
         }
         ui_update_time(timeStr);
     }
@@ -178,6 +189,7 @@ void loop() {
         mqtt.publish("system/version", "v0.1.0", true);
         mqtt.publish("system/mac", WiFi.macAddress().c_str(), true);
         mqtt.publish("settings/use_24hr_format", settings.getUse24HourFormat() ? "ON" : "OFF", true);
+        mqtt.publish("settings/show_seconds", settings.getShowSeconds() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_enabled", settings.getLedEnabled() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
         mqtt.publish("settings/auto_brightness", settings.getAutoBrightness() ? "ON" : "OFF", true);

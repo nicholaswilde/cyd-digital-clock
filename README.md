@@ -123,6 +123,7 @@ Example JSON response:
 ```json
 {
   "use_24hr_format": false,
+  "show_seconds": true,
   "brightness": 80,
   "auto_brightness": true,
   "timezone": "UTC0",
@@ -180,6 +181,7 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>system/version` | Firmware version | `v0.1.0` |
 | `<base_topic>system/mac` | MAC address | `AA:BB:CC:DD:EE:FF` |
 | `<base_topic>settings/use_24hr_format` | 24-hour format switch | `ON` / `OFF` |
+| `<base_topic>settings/show_seconds` | Show seconds switch | `ON` / `OFF` |
 | `<base_topic>settings/led_enabled` | Status LED switch | `ON` / `OFF` |
 | `<base_topic>settings/led_brightness` | Status LED brightness percentage | `10`–`100` |
 
@@ -188,6 +190,7 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | Topic | Payload | Description |
 | :--- | :--- | :--- |
 | `<base_topic>command/use_24hr_format` | `ON` / `OFF` / `1` / `0` | Toggles 12/24-hour display format. |
+| `<base_topic>command/show_seconds` | `ON` / `OFF` / `1` / `0` | Toggles showing seconds on clock display. |
 | `<base_topic>command/led_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the status RGB LED. |
 | `<base_topic>command/led_brightness` | `10`–`100` | Adjusts the status RGB LED brightness percentage. |
 

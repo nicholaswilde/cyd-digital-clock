@@ -40,6 +40,7 @@ private:
     String _sleepEndTime;
     String _ntpServer;
     bool _use24HourFormat;
+    bool _showSeconds;
 
 public:
     SettingsManager();
@@ -47,6 +48,9 @@ public:
     
     bool getUse24HourFormat() const;
     void setUse24HourFormat(bool use24Hour);
+    
+    bool getShowSeconds() const;
+    void setShowSeconds(bool showSeconds);
     
     
     int getBrightness() const;

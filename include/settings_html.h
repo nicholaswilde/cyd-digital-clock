@@ -46,6 +46,11 @@ button:hover { background: #f5c2e7; }
     <option value='1' %FORMAT_24HR%>24-Hour</option>
 </select>
 
+<div class='checkbox-group' style='margin-bottom: 20px;'>
+    <input type='checkbox' id='show_seconds' name='show_seconds' value='1' %SHOW_SECONDS%>
+    <label for='show_seconds' title='Show seconds on the clock display'>Show Seconds</label>
+</div>
+
 <label for='theme_flavor' title='Select the color palette for the user interface'>Theme (Catppuccin)</label>
 <select id='theme_flavor' name='theme_flavor'>
     <option value='1' %THEME_MOCHA%>Mocha</option>
