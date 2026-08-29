@@ -1,7 +1,11 @@
 #include "include/ui.h"
 #include "include/catppuccin.h"
 #include "include/settings_manager.h"
+#include "include/wifi_manager.h"
+#include <WiFi.h>
+
 extern SettingsManager settings;
+extern WifiManager wifi;
 
 lv_obj_t* ui_ScreenMain;
 lv_obj_t* ui_LabelTime;
@@ -13,6 +17,8 @@ static lv_obj_t* ui_SwitchShowSeconds = nullptr;
 static lv_obj_t* ui_BrightnessSlider = nullptr;
 static lv_obj_t* ui_LedSwitch = nullptr;
 static lv_obj_t* ui_LedBrightnessSlider = nullptr;
+static lv_obj_t* ui_WifiIcon = nullptr;
+static lv_obj_t* ui_WifiModal = nullptr;
 
 CatppuccinColors current_colors = getCatppuccinFlavor(CATPPUCCIN_MOCHA);
 
@@ -40,7 +46,11 @@ void ui_set_theme(int theme_id) {
     // Backup old pointers to avoid dangling usage before they are initialized
     ui_ScreenMain = nullptr;
     ui_ScreenSettings = nullptr;
+
+    ui_WifiIcon = nullptr;
+    ui_WifiModal = nullptr;
     ui_LabelTime = nullptr;
+
     ui_SwitchAutoBrightness = nullptr;
     ui_Switch24Hour = nullptr;
     ui_SwitchShowSeconds = nullptr;
@@ -66,6 +76,79 @@ static void main_screen_event_cb(lv_event_t * e) {
     }
 }
 
+
+static void close_wifi_info_cb(lv_event_t * e) {
+    if (ui_WifiModal != nullptr) {
+        lv_obj_del(ui_WifiModal);
+        ui_WifiModal = nullptr;
+    }
+}
+
+static void wifi_icon_click_cb(lv_event_t * e) {
+    if (ui_WifiModal != nullptr) return;
+
+    ui_WifiModal = lv_obj_create(ui_ScreenSettings);
+    lv_obj_set_size(ui_WifiModal, 320, 240);
+    lv_obj_align(ui_WifiModal, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(ui_WifiModal, lv_color_hex(current_colors.base), 0);
+    lv_obj_set_style_border_width(ui_WifiModal, 0, 0);
+    lv_obj_clear_flag(ui_WifiModal, LV_OBJ_FLAG_SCROLLABLE);
+
+    // Title label
+    lv_obj_t * lbl_title = lv_label_create(ui_WifiModal);
+    lv_label_set_text(lbl_title, "WiFi Info");
+    lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_color(lbl_title, lv_color_hex(current_colors.text), 0);
+    lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 5);
+
+    // Status label
+    lv_obj_t * lbl_status = lv_label_create(ui_WifiModal);
+    WifiState state = wifi.getState();
+    const char* statusStr = "Unknown";
+    uint32_t statusColor = current_colors.text;
+    if (state == WIFI_STATE_CONNECTED) {
+        statusStr = "Connected";
+        statusColor = current_colors.green;
+    } else if (state == WIFI_STATE_CONNECTING) {
+        statusStr = "Connecting";
+        statusColor = current_colors.yellow;
+    } else if (state == WIFI_STATE_AP_MODE) {
+        statusStr = "AP Mode";
+        statusColor = current_colors.mauve;
+    } else {
+        statusStr = "Disconnected";
+        statusColor = current_colors.red;
+    }
+    
+    lv_label_set_text(lbl_status, statusStr);
+    lv_obj_set_style_text_color(lbl_status, lv_color_hex(statusColor), 0);
+    lv_obj_align(lbl_status, LV_ALIGN_TOP_MID, 0, 30);
+
+    // Info details
+    lv_obj_t * lbl_info = lv_label_create(ui_WifiModal);
+#ifndef NATIVE_TEST
+    char infoBuf[256];
+    snprintf(infoBuf, sizeof(infoBuf), "SSID: %s\nIP: %s\nHost: %s\nMAC: %s\nRSSI: %d dBm", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.getHostname(), WiFi.macAddress().c_str(), WiFi.RSSI());
+    lv_label_set_text(lbl_info, infoBuf);
+#else
+    lv_label_set_text(lbl_info, "SSID: Test\nIP: 192.168.1.2\nHost: ESP32\nMAC: 00:00:00\nRSSI: -50 dBm");
+#endif
+    lv_obj_set_style_text_align(lbl_info, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(lbl_info, lv_color_hex(current_colors.text), 0);
+    lv_obj_align(lbl_info, LV_ALIGN_TOP_MID, 0, 60);
+
+    // Close Button
+    lv_obj_t * btn_close = lv_btn_create(ui_WifiModal);
+    lv_obj_set_size(btn_close, 100, 32);
+    lv_obj_align(btn_close, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_style_bg_color(btn_close, lv_color_hex(current_colors.overlay), 0);
+    lv_obj_add_event_cb(btn_close, close_wifi_info_cb, LV_EVENT_CLICKED, NULL);
+
+    lv_obj_t * lbl_close = lv_label_create(btn_close);
+    lv_label_set_text(lbl_close, "Close");
+    lv_obj_set_style_text_color(lbl_close, lv_color_hex(current_colors.crust), 0);
+    lv_obj_center(lbl_close);
+}
 static void settings_back_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
         lv_scr_load_anim(ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 300, 0, false);
@@ -169,6 +252,15 @@ void ui_init(void) {
     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, LV_PART_MAIN);
     lv_obj_set_style_text_color(title, lv_color_hex(current_colors.text), LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
+    // Wifi Icon
+    ui_WifiIcon = lv_label_create(ui_ScreenSettings);
+    lv_label_set_text(ui_WifiIcon, LV_SYMBOL_WIFI);
+    lv_obj_align(ui_WifiIcon, LV_ALIGN_TOP_RIGHT, -15, 15);
+    lv_obj_add_flag(ui_WifiIcon, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_ext_click_area(ui_WifiIcon, 15);
+    lv_obj_add_event_cb(ui_WifiIcon, wifi_icon_click_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_hex(current_colors.red), 0);
+
 
     // Create a flex container for settings items
     lv_obj_t* cont = lv_obj_create(ui_ScreenSettings);
@@ -445,4 +537,15 @@ void ui_show_ap_mode(const char* apSSID) {
 
 void ui_hide_ap_mode() {
     lv_scr_load(ui_ScreenMain);
+}
+
+void ui_update_wifi_status(int state) {
+    if (!ui_WifiIcon) return;
+    
+    uint32_t c = current_colors.red;
+    if (state == WIFI_STATE_CONNECTED) c = current_colors.green;
+    else if (state == WIFI_STATE_CONNECTING) c = current_colors.yellow;
+    else if (state == WIFI_STATE_AP_MODE) c = current_colors.mauve;
+    
+    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_hex(c), 0);
 }

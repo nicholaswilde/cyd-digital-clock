@@ -157,6 +157,9 @@ void loop() {
 
     // Network updates
     wifi.update();
+    
+    ui_update_wifi_status(wifi.getState());
+
     // mqtt.update();
 
     bool isAPMode = (wifi.getState() == WIFI_STATE_AP_MODE);

@@ -10,6 +10,7 @@ extern lv_obj_t* ui_ScreenSettings;
 
 void ui_init(void);
 void ui_update(void);
+void ui_update_wifi_status(int state);
 void ui_set_theme(int theme_id);
 void ui_sync_toggles(void);
 void ui_update_time(const char* time_str);
