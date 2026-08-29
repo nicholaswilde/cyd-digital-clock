@@ -145,6 +145,16 @@ void loop() {
     wifi.update();
     // mqtt.update();
 
+    bool isAPMode = (wifi.getState() == WIFI_STATE_AP_MODE);
+    static bool wasAPMode = false;
+    if (isAPMode && !wasAPMode) {
+        ui_show_ap_mode(wifi.getAPSSID().c_str());
+        wasAPMode = true;
+    } else if (!isAPMode && wasAPMode) {
+        ui_hide_ap_mode();
+        wasAPMode = false;
+    }
+
     // Sync Settings changes from Web/API -> Device
     if (settings.hasChanged()) {
         Serial.println("[System] Applying updated settings...");

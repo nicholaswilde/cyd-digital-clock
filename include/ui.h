@@ -16,4 +16,7 @@ void ui_update_time(const char* time_str);
 void showScreenSaver(void);
 void hideScreenSaver(void);
 
+void ui_show_ap_mode(const char* apSSID);
+void ui_hide_ap_mode(void);
+
 #endif // UI_H

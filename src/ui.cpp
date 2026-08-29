@@ -327,3 +327,52 @@ void ui_update_time(const char* time_str) {
 
 void showScreenSaver(void) {}
 void hideScreenSaver(void) {}
+
+static lv_obj_t* ui_ScreenAP = nullptr;
+static lv_obj_t* ui_LabelAPSSID = nullptr;
+
+void ui_show_ap_mode(const char* apSSID) {
+    if (!ui_ScreenAP) {
+        ui_ScreenAP = lv_obj_create(NULL);
+        lv_obj_set_style_bg_color(ui_ScreenAP, lv_color_hex(current_colors.base), LV_PART_MAIN);
+
+        lv_obj_t* wifi_icon = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(wifi_icon, LV_SYMBOL_WIFI);
+        lv_obj_set_style_text_color(wifi_icon, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
+        lv_obj_set_style_text_font(wifi_icon, &lv_font_montserrat_20, LV_PART_MAIN);
+        lv_obj_align(wifi_icon, LV_ALIGN_TOP_RIGHT, -10, 10);
+
+        lv_obj_t* status_lbl = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(status_lbl, "AP Active");
+        lv_obj_set_style_text_color(status_lbl, lv_color_hex(current_colors.mauve), LV_PART_MAIN);
+        lv_obj_set_style_text_font(status_lbl, &lv_font_montserrat_20, LV_PART_MAIN);
+        lv_obj_align(status_lbl, LV_ALIGN_TOP_LEFT, 10, 10);
+
+        lv_obj_t* setup_lbl = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(setup_lbl, "Setup");
+        lv_obj_set_style_text_color(setup_lbl, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_set_style_text_font(setup_lbl, &lv_font_montserrat_48, LV_PART_MAIN);
+        lv_obj_align(setup_lbl, LV_ALIGN_CENTER, 0, -40);
+
+        lv_obj_t* ip_lbl = lv_label_create(ui_ScreenAP);
+        lv_label_set_text(ip_lbl, "192.168.4.1");
+        lv_obj_set_style_text_color(ip_lbl, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_set_style_text_font(ip_lbl, &lv_font_montserrat_28, LV_PART_MAIN);
+        lv_obj_align(ip_lbl, LV_ALIGN_CENTER, 0, 20);
+
+        ui_LabelAPSSID = lv_label_create(ui_ScreenAP);
+        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.text), LV_PART_MAIN);
+        lv_obj_set_style_text_font(ui_LabelAPSSID, &lv_font_montserrat_20, LV_PART_MAIN);
+        lv_obj_align(ui_LabelAPSSID, LV_ALIGN_CENTER, 0, 70);
+    }
+    
+    if (ui_LabelAPSSID) {
+        lv_label_set_text(ui_LabelAPSSID, apSSID);
+    }
+
+    lv_scr_load(ui_ScreenAP);
+}
+
+void ui_hide_ap_mode() {
+    lv_scr_load(ui_ScreenMain);
+}
