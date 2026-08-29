@@ -263,10 +263,12 @@ void ui_init(void) {
 
     // Back Button
     lv_obj_t* back_btn = lv_btn_create(ui_ScreenSettings);
-    lv_obj_align(back_btn, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_size(back_btn, 80, 25);
+    lv_obj_align(back_btn, LV_ALIGN_BOTTOM_MID, 0, -5);
     lv_obj_add_event_cb(back_btn, settings_back_event_cb, LV_EVENT_ALL, NULL);
     lv_obj_t* back_label = lv_label_create(back_btn);
     lv_label_set_text(back_label, "Back");
+    lv_obj_center(back_label);
 
     lv_scr_load(ui_ScreenMain);
 }
