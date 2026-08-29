@@ -15,12 +15,15 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
   - Accurate, synchronized time display updated every second.
   - Automatic time synchronization via Network Time Protocol (NTP).
   - Native POSIX timezone string support with automatic Daylight Saving Time (DST) calculations.
-- **12 / 24-Hour Time Format**:
-  - Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes via the touch screen.
-- **Catppuccin Color Schemes**:
-  - Built with the beautiful Catppuccin color palette (Mocha flavor by default).
-- **Long-Press Settings Navigation**:
+- **12 / 24-Hour Time Format & Seconds Toggle**:
+  - Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes and toggle seconds on/off via the touchscreen interface.
+- **Catppuccin Color Themes**:
+  - Full dynamic theme selection across 4 Catppuccin flavors (**Mocha**, **Macchiato**, **Frappé**, **Latte**) with instant live UI restyling.
+  - Configurable compile-time default via `DEFAULT_THEME_FLAVOR` in `config/config.h`.
+- **On-Device Settings & Interactive Network Modal**:
   - Long-press anywhere on the clock display for 1.5 seconds to open the full-screen Settings screen.
+  - Interactive Wi-Fi status icon colored dynamically by connection state (Green=Connected, Yellow=Connecting, Red=Disconnected, Mauve=AP Mode).
+  - Tapping the Wi-Fi icon displays a network information modal with live details (SSID, IP address, Hostname, MAC address, RSSI).
 - **Backlight & Auto-Brightness Control**:
   - Manual backlight level slider (10%–100%) or automatic brightness driven by onboard LDR photoresistor (GPIO 34) with LEDC PWM (GPIO 21).
 - **RGB LED Status Indicator**:
@@ -74,6 +77,11 @@ Wi-Fi credentials and local secrets live in a Git-ignored secrets file to preven
 
 Default settings live in [`config/config.h`](config/config.h). 
 
+**Theme Flavor Default:**
+```cpp
+#define DEFAULT_THEME_FLAVOR CATPPUCCIN_MOCHA
+```
+
 **Timezone & NTP Server:**
 ```cpp
 #define TIMEZONE_DEFAULT "UTC0"
@@ -103,7 +111,10 @@ Settings can be adjusted via the touchscreen interface:
 
 | Setting | Description |
 | :--- | :--- |
+| **Theme (Catppuccin)** | Select UI color theme flavor (**Mocha**, **Macchiato**, **Frappé**, **Latte**). |
 | **Time Format** | Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes. |
+| **Show Seconds** | Toggle displaying seconds on the clock face. |
+| **Auto Brightness** | Toggle automatic brightness adjustment driven by ambient light sensor (LDR). |
 | **Screen Brightness** | Adjust the display backlight brightness (10% to 100%). |
 | **Status LED** | Enable or disable the onboard RGB LED status indicator. |
 | **LED Brightness** | Adjust the brightness of the RGB LED (10% to 100%). |
@@ -180,8 +191,12 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>system/ip` | Device IP address | `192.168.1.100` |
 | `<base_topic>system/version` | Firmware version | `v0.1.0` |
 | `<base_topic>system/mac` | MAC address | `AA:BB:CC:DD:EE:FF` |
+| `<base_topic>settings/theme` | Current theme flavor | `Mocha` / `Macchiato` / `Frappe` / `Latte` |
+| `<base_topic>settings/screen_orientation` | Screen orientation | `Landscape` / `Portrait` / `Portrait Rev` / `Landscape Rev` |
 | `<base_topic>settings/use_24hr_format` | 24-hour format switch | `ON` / `OFF` |
 | `<base_topic>settings/show_seconds` | Show seconds switch | `ON` / `OFF` |
+| `<base_topic>settings/auto_brightness` | Auto-brightness switch | `ON` / `OFF` |
+| `<base_topic>settings/brightness` | Screen brightness percentage | `10`–`100` |
 | `<base_topic>settings/led_enabled` | Status LED switch | `ON` / `OFF` |
 | `<base_topic>settings/led_brightness` | Status LED brightness percentage | `10`–`100` |
 
@@ -189,8 +204,12 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 
 | Topic | Payload | Description |
 | :--- | :--- | :--- |
+| `<base_topic>command/theme` | `Mocha` / `Macchiato` / `Frappe` / `Latte` | Changes the UI Catppuccin theme flavor. |
+| `<base_topic>command/screen_orientation` | `Landscape` / `Portrait` / `Portrait Rev` / `Landscape Rev` | Rotates display orientation. |
 | `<base_topic>command/use_24hr_format` | `ON` / `OFF` / `1` / `0` | Toggles 12/24-hour display format. |
 | `<base_topic>command/show_seconds` | `ON` / `OFF` / `1` / `0` | Toggles showing seconds on clock display. |
+| `<base_topic>command/auto_brightness` | `ON` / `OFF` / `1` / `0` | Toggles LDR-driven automatic brightness. |
+| `<base_topic>command/brightness` | `10`–`100` | Adjusts the display backlight brightness percentage. |
 | `<base_topic>command/led_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the status RGB LED. |
 | `<base_topic>command/led_brightness` | `10`–`100` | Adjusts the status RGB LED brightness percentage. |
 
