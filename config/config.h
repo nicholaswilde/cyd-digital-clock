@@ -10,7 +10,7 @@
 #define TIMEZONE_DEFAULT "UTC0"       // POSIX Timezone string
 
 // Wi-Fi Settings
-#define WIFI_ENABLED false
+#define WIFI_ENABLED true
 
 // US Eastern
 // #define TIMEZONE_DEFAULT "EST5EDT,M3.2.0,M11.1.0"
@@ -48,7 +48,7 @@ extern int getCurrentThemeFlavor();
 
 
 // Choose Time Format (12 vs 24 hour)
-#define DEFAULT_USE_24HOUR_FORMAT true
+#define DEFAULT_USE_24HOUR_FORMAT false
 
 // Show seconds on the clock
 #define DEFAULT_SHOW_SECONDS true

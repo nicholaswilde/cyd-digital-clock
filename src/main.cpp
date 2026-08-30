@@ -74,7 +74,13 @@ void setup() {
     led.begin();
     led.setEnabled(settings.getLedEnabled());
     led.setBrightness(settings.getLedBrightness());
-    RtcManager::begin();
+    if (settings.getUseRtc()) {
+        if (!RtcManager::begin()) {
+            Serial.println("[RTC] Hardware not detected, automatically disabling RTC setting.");
+            settings.setUseRtc(false);
+            settings.setChanged();
+        }
+    }
 
     // 3. Display & Touch
     initDisplayAndTouch();
