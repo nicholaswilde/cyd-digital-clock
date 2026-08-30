@@ -259,6 +259,19 @@ void loop() {
         // Re-configure NTP timezone if it changed
         configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
         
+        // If RTC was just enabled, initialise hardware and immediately sync to system time
+        if (settings.getUseRtc()) {
+            if (!RtcManager::isAvailable()) {
+                if (RtcManager::begin()) {
+                    RtcManager::syncToSystem();
+                    updateTimeUI(); // refresh clock face immediately
+                } else {
+                    Serial.println("[RTC] Hardware not detected, disabling RTC setting.");
+                    settings.setUseRtc(false);
+                }
+            }
+        }
+        
         if (settings.getWifiEnabled()) {
             if (WiFi.getMode() == WIFI_OFF) {
                 wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
