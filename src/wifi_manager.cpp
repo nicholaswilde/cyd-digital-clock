@@ -93,7 +93,9 @@ void WifiManager::begin() {
 #endif
     WiFi.mode(WIFI_STA);
     
+    #ifndef NATIVE_TEST
     _ssid.trim();
+#endif
     if (_ssid.length() == 0 || _ssid == "YOUR_WIFI_SSID") {
         Serial.println("[WiFi] No credentials configured. Launching AP mode directly...");
         startAPMode();
