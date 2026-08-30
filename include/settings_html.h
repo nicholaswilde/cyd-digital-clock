@@ -108,7 +108,17 @@ button:hover { background: #f5c2e7; }
 <label for='ntp_server' title='Network Time Protocol server for time synchronization'>NTP Server</label>
 <input type='text' id='ntp_server' name='ntp_server' value='%NTP_SERVER%'>
 
+<div class='section-title'>Manual Time Settings</div>
+<label for='manual_time' title='Set device time manually'>Manual Time</label>
+<input type='datetime-local' id='manual_time' name='manual_time'>
+<button type='button' onclick='document.getElementById("manual_time").value = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16)' style='margin-top: -10px; margin-bottom: 20px; font-size: 14px; padding: 8px;'>Sync with Browser Time</button>
+
 <div class='section-title'>System Features</div>
+<div class='checkbox-group'>
+    <input type='checkbox' id='wifi_enabled' name='wifi_enabled' value='1' %WIFI_ENABLED%>
+    <label for='wifi_enabled' title='Enable or disable WiFi connectivity'>WiFi Enabled</label>
+</div>
+
 <div class='checkbox-group'>
     <input type='checkbox' id='led_enabled' name='led_enabled' value='1' %LED_ENABLED%>
     <label for='led_enabled' title='Enable or disable the onboard RGB LED'>RGB LED Enabled</label>

@@ -26,6 +26,37 @@ ScreenSaverManager screensaver(backlight, 60000);
 // Add missing variable referenced in original MQTT diagnostics
 bool force_mqtt_publish = true;
 
+
+
+#include <esp_sntp.h>
+
+uint32_t _lastSyncMillis = 0;
+struct timeval _lastSyncTime = {0};
+bool _hasNtpSynced = false;
+
+void timeSyncCallback(struct timeval *tv) {
+    unsigned long currentMillis = millis();
+    if (_lastSyncMillis != 0 && _lastSyncTime.tv_sec != 0) {
+        unsigned long elapsedMillis = currentMillis - _lastSyncMillis;
+        double elapsedSysSecs = elapsedMillis / 1000.0;
+        double actualElapsedSecs = (tv->tv_sec - _lastSyncTime.tv_sec) + 
+                                   (tv->tv_usec - _lastSyncTime.tv_usec) / 1000000.0;
+        double driftSecs = actualElapsedSecs - elapsedSysSecs;
+        if (elapsedSysSecs > 3000.0) {
+            double driftPerDay = (driftSecs / elapsedSysSecs) * 86400.0;
+            if (abs(driftPerDay) < 300.0) {
+                settings.setRtcDrift(driftPerDay);
+                settings.setChanged();
+                Serial.printf("[System] NTP Sync Drift Calculated: %f sec/day\n", driftPerDay);
+            }
+        }
+    }
+    _lastSyncMillis = currentMillis;
+    _lastSyncTime = *tv;
+    _hasNtpSynced = true;
+    Serial.println("[System] NTP Time Synced.");
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println("\n[System] Booting Digital Clock...");
@@ -53,11 +84,30 @@ void setup() {
     ui_set_theme(settings.getThemeFlavor());
 
     // 5. Connect WiFi & Setup Time
+    sntp_set_time_sync_notification_cb(timeSyncCallback);
     wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
-    wifi.begin();
+    if (settings.getWifiEnabled()) {
+        wifi.begin();
+    } else {
+        wifi.stop();
+    }
     
     // Sync time using NTP with POSIX Timezone
     configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
+
+    // Initialize to 12:00 locally if clock hasn't been set
+    time_t now;
+    time(&now);
+    if (now < 100000) { 
+        struct tm timeinfo = {0};
+        timeinfo.tm_hour = 12;
+        timeinfo.tm_mday = 1;
+        timeinfo.tm_year = 124; // 2024
+        struct timeval tv;
+        tv.tv_sec = mktime(&timeinfo);
+        tv.tv_usec = 0;
+        settimeofday(&tv, NULL);
+    }
 
     // 6. MQTT
     mqtt.onMessage([](String topic, String payload) {
@@ -156,9 +206,11 @@ void loop() {
     // ScreenshotManager::update();
 
     // Network updates
-    wifi.update();
+    if (settings.getWifiEnabled()) {
+        wifi.update();
+    }
     
-    ui_update_wifi_status(wifi.getState());
+    ui_update_wifi_status(settings.getWifiEnabled() ? wifi.getState() : WIFI_STATE_DISCONNECTED);
 
     // mqtt.update();
 
@@ -186,6 +238,17 @@ void loop() {
         // Re-configure NTP timezone if it changed
         configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
         
+        if (settings.getWifiEnabled()) {
+            if (WiFi.getMode() == WIFI_OFF) {
+                wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
+                wifi.begin();
+            }
+        } else {
+            if (WiFi.getMode() != WIFI_OFF) {
+                wifi.stop();
+            }
+        }
+        
         if (mqtt.isConnected()) {
             mqtt.publish("status", "Settings updated.");
         }
@@ -201,6 +264,26 @@ void loop() {
     if (currentMillis - lastTimeUpdate >= 1000) {
         lastTimeUpdate = currentMillis;
         updateTimeUI();
+    }
+
+    // Micro-tuning loop (every 1 hour)
+    static unsigned long lastTuningUpdate = 0;
+    if (lastTuningUpdate == 0) lastTuningUpdate = currentMillis;
+    if (currentMillis - lastTuningUpdate >= 3600000) {
+        lastTuningUpdate = currentMillis;
+        if (currentMillis - _lastSyncMillis >= 3600000 || !_hasNtpSynced) {
+            float driftPerDay = settings.getRtcDrift();
+            if (abs(driftPerDay) > 0.01f) {
+                float driftPerHour = driftPerDay / 24.0f;
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                double newTime = tv.tv_sec + (tv.tv_usec / 1000000.0) + driftPerHour;
+                tv.tv_sec = (time_t)newTime;
+                tv.tv_usec = (newTime - tv.tv_sec) * 1000000;
+                settimeofday(&tv, NULL);
+                Serial.printf("[System] Applied RTC Drift compensation: %f seconds\n", driftPerHour);
+            }
+        }
     }
 
     // Publish MQTT Diagnostics and Settings periodically

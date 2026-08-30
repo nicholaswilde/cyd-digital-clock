@@ -104,6 +104,24 @@ void WifiManager::begin() {
     }
 }
 
+void WifiManager::stop() {
+    _state = WIFI_STATE_DISCONNECTED;
+#ifndef NATIVE_TEST
+    if (_dnsServer) {
+        _dnsServer->stop();
+        delete _dnsServer;
+        _dnsServer = nullptr;
+    }
+    if (_webServer) {
+        _webServer->stop();
+        delete _webServer;
+        _webServer = nullptr;
+    }
+    WiFi.disconnect(true, true);
+    WiFi.mode(WIFI_OFF);
+#endif
+}
+
 void WifiManager::update() {
 #ifndef NATIVE_TEST
     if (_improv) {
@@ -301,6 +319,41 @@ void WifiManager::startAPMode() {
     _webServer->on("/success.txt", cpRedirect);         // Apple/Firefox
     _webServer->on("/ncsi.txt", cpRedirect);            // Windows
     _webServer->on("/favicon.ico", [this]() { _webServer->send(404); });
+
+
+    _webServer->on("/api/calibration/rtc", HTTP_GET, [this]() {
+        if (!settings.getApiServerEnabled()) {
+            _webServer->send(403, "text/plain", "Forbidden: API server disabled in settings");
+            return;
+        }
+        DynamicJsonDocument doc(256);
+        doc["rtc_drift"] = settings.getRtcDrift();
+        String response;
+        serializeJson(doc, response);
+        _webServer->send(200, "application/json", response);
+    });
+
+    _webServer->on("/api/calibration/rtc", HTTP_POST, [this]() {
+        if (!settings.getApiServerEnabled()) {
+            _webServer->send(403, "text/plain", "Forbidden: API server disabled in settings");
+            return;
+        }
+        if (!_webServer->hasArg("plain")) {
+            _webServer->send(400, "text/plain", "Body not received");
+            return;
+        }
+        DynamicJsonDocument doc(512);
+        DeserializationError error = deserializeJson(doc, _webServer->arg("plain"));
+        if (error) {
+            _webServer->send(400, "text/plain", "Invalid JSON");
+            return;
+        }
+        if (doc.containsKey("rtc_drift")) {
+            settings.setRtcDrift(doc["rtc_drift"].as<float>());
+            settings.setChanged();
+        }
+        _webServer->send(200, "application/json", "{\"status\":\"success\"}");
+    });
 
     _webServer->onNotFound([this]() { handleNotFound(); });
     registerOTARoutes();
@@ -530,6 +583,7 @@ void WifiManager::startWebServer() {
         doc["static_dns"] = settings.getStaticDns();
         doc["ap_password"] = settings.getApPassword();
         doc["ntp_server"] = settings.getNtpServer();
+        doc["rtc_drift"] = settings.getRtcDrift();
 
         String response;
         serializeJson(doc, response);
@@ -588,6 +642,7 @@ void WifiManager::startWebServer() {
         if (doc.containsKey("static_dns")) settings.setStaticDns(doc["static_dns"].as<String>());
         if (doc.containsKey("ap_password")) settings.setApPassword(doc["ap_password"].as<String>());
         if (doc.containsKey("ntp_server")) settings.setNtpServer(doc["ntp_server"].as<String>());
+        if (doc.containsKey("rtc_drift")) settings.setRtcDrift(doc["rtc_drift"].as<float>());
         
         settings.setChanged();
         _webServer->send(200, "application/json", "{\"status\":\"ok\"}");

@@ -36,11 +36,16 @@ void test_settings_default_values(void) {
     TEST_ASSERT_EQUAL(DEFAULT_USE_24HOUR_FORMAT, settings.getUse24HourFormat());
     TEST_ASSERT_EQUAL(DEFAULT_SHOW_SECONDS, settings.getShowSeconds());
     TEST_ASSERT_EQUAL(DEFAULT_THEME_FLAVOR, settings.getThemeFlavor());
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, settings.getRtcDrift());
 }
 
 void test_settings_save_and_load(void) {
     SettingsManager settings;
     settings.begin();
+    
+    // Verify setters and persistent loading
+    settings.setRtcDrift(12.5f);
+    TEST_ASSERT_EQUAL_FLOAT(12.5f, settings.getRtcDrift());
     
     // Modify settings
     settings.setUse24HourFormat(false);

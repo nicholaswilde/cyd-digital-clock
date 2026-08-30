@@ -3,6 +3,8 @@
 #include "include/catppuccin.h"
 #include "include/settings_manager.h"
 #include "include/wifi_manager.h"
+#include <time.h>
+#include <sys/time.h>
 #include <WiFi.h>
 
 extern SettingsManager settings;
@@ -20,6 +22,16 @@ static lv_obj_t* ui_LedSwitch = nullptr;
 static lv_obj_t* ui_LedBrightnessSlider = nullptr;
 static lv_obj_t* ui_WifiIcon = nullptr;
 static lv_obj_t* ui_WifiModal = nullptr;
+static lv_obj_t* ui_SwitchWifiEnabled = nullptr;
+
+static lv_obj_t* ui_SliderHour = nullptr;
+static lv_obj_t* ui_LabelHourVal = nullptr;
+static lv_obj_t* ui_BtnHourDec = nullptr;
+static lv_obj_t* ui_BtnHourInc = nullptr;
+static lv_obj_t* ui_SliderMinute = nullptr;
+static lv_obj_t* ui_LabelMinuteVal = nullptr;
+static lv_obj_t* ui_BtnMinDec = nullptr;
+static lv_obj_t* ui_BtnMinInc = nullptr;
 
 CatppuccinColors current_colors = getCatppuccinFlavor(CATPPUCCIN_MOCHA);
 
@@ -73,6 +85,23 @@ void ui_set_theme(int theme_id) {
 static void main_screen_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_LONG_PRESSED) {
         lv_obj_clear_state(lv_event_get_target(e), LV_STATE_PRESSED);
+        
+        struct tm timeinfo;
+        if (getLocalTime(&timeinfo, 100)) {
+            if (ui_SliderHour && ui_LabelHourVal) {
+                lv_slider_set_value(ui_SliderHour, timeinfo.tm_hour, LV_ANIM_OFF);
+                char hbuf[16];
+                snprintf(hbuf, sizeof(hbuf), "Hour: %02d", timeinfo.tm_hour);
+                lv_label_set_text(ui_LabelHourVal, hbuf);
+            }
+            if (ui_SliderMinute && ui_LabelMinuteVal) {
+                lv_slider_set_value(ui_SliderMinute, timeinfo.tm_min, LV_ANIM_OFF);
+                char mbuf[16];
+                snprintf(mbuf, sizeof(mbuf), "Minute: %02d", timeinfo.tm_min);
+                lv_label_set_text(ui_LabelMinuteVal, mbuf);
+            }
+        }
+        
         lv_scr_load_anim(ui_ScreenSettings, LV_SCR_LOAD_ANIM_FADE_ON, 300, 0, false);
     }
 }
@@ -156,6 +185,13 @@ static void settings_back_event_cb(lv_event_t * e) {
     }
 }
 
+static void switch_wifi_enabled_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        settings.setWifiEnabled(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
+        settings.setChanged();
+    }
+}
+
 static void switch_24hr_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
         settings.setUse24HourFormat(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
@@ -229,6 +265,81 @@ static void led_brightness_event_cb(lv_event_t * e) {
     }
 }
 
+void update_system_time(int hour, int min) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo, 100)) {
+        if (hour >= 0) timeinfo.tm_hour = hour;
+        if (min >= 0) timeinfo.tm_min = min;
+        
+        struct timeval tv;
+        tv.tv_sec = mktime(&timeinfo);
+        tv.tv_usec = 0;
+        settimeofday(&tv, NULL);
+    }
+}
+
+static void hour_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t * slider = lv_event_get_target(e);
+        int val = lv_slider_get_value(slider);
+        char buf[16];
+        snprintf(buf, sizeof(buf), "Hour: %02d", val);
+        lv_label_set_text(ui_LabelHourVal, buf);
+        update_system_time(val, -1);
+    }
+}
+
+static void hour_dec_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        int val = lv_slider_get_value(ui_SliderHour);
+        if (val > 0) val--;
+        else val = 23;
+        lv_slider_set_value(ui_SliderHour, val, LV_ANIM_OFF);
+        lv_event_send(ui_SliderHour, LV_EVENT_VALUE_CHANGED, NULL);
+    }
+}
+
+static void hour_inc_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        int val = lv_slider_get_value(ui_SliderHour);
+        if (val < 23) val++;
+        else val = 0;
+        lv_slider_set_value(ui_SliderHour, val, LV_ANIM_OFF);
+        lv_event_send(ui_SliderHour, LV_EVENT_VALUE_CHANGED, NULL);
+    }
+}
+
+static void minute_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t * slider = lv_event_get_target(e);
+        int val = lv_slider_get_value(slider);
+        char buf[16];
+        snprintf(buf, sizeof(buf), "Minute: %02d", val);
+        lv_label_set_text(ui_LabelMinuteVal, buf);
+        update_system_time(-1, val);
+    }
+}
+
+static void min_dec_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        int val = lv_slider_get_value(ui_SliderMinute);
+        if (val > 0) val--;
+        else val = 59;
+        lv_slider_set_value(ui_SliderMinute, val, LV_ANIM_OFF);
+        lv_event_send(ui_SliderMinute, LV_EVENT_VALUE_CHANGED, NULL);
+    }
+}
+
+static void min_inc_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        int val = lv_slider_get_value(ui_SliderMinute);
+        if (val < 59) val++;
+        else val = 0;
+        lv_slider_set_value(ui_SliderMinute, val, LV_ANIM_OFF);
+        lv_event_send(ui_SliderMinute, LV_EVENT_VALUE_CHANGED, NULL);
+    }
+}
+
 void ui_init(void) {
     // --- Main Screen ---
     ui_ScreenMain = lv_obj_create(NULL);
@@ -273,7 +384,7 @@ void ui_init(void) {
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_row(cont, 8, LV_PART_MAIN);
 
-    // 0. Theme Flavor
+    // 0b. Theme Flavor
     lv_obj_t* row0 = lv_obj_create(cont);
     lv_obj_set_width(row0, lv_pct(90));
     lv_obj_set_height(row0, LV_SIZE_CONTENT);
@@ -345,6 +456,132 @@ void ui_init(void) {
     ui_SwitchAutoBrightness = lv_switch_create(row1_5);
     if (settings.getAutoBrightness()) lv_obj_add_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
     lv_obj_add_event_cb(ui_SwitchAutoBrightness, switch_auto_bright_event_cb, LV_EVENT_ALL, NULL);
+
+    // 0. Enable WiFi
+    lv_obj_t* row_wifi_en = lv_obj_create(cont);
+    lv_obj_set_width(row_wifi_en, lv_pct(90));
+    lv_obj_set_height(row_wifi_en, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row_wifi_en, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row_wifi_en, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row_wifi_en, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row_wifi_en, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_wifi_en = lv_label_create(row_wifi_en);
+    lv_label_set_text(label_wifi_en, "Enable WiFi");
+    lv_obj_set_style_text_color(label_wifi_en, lv_color_16(current_colors.text), LV_PART_MAIN);
+
+    ui_SwitchWifiEnabled = lv_switch_create(row_wifi_en);
+    if (settings.getWifiEnabled()) lv_obj_add_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
+    lv_obj_add_event_cb(ui_SwitchWifiEnabled, switch_wifi_enabled_event_cb, LV_EVENT_ALL, NULL);
+
+    // 1.6 Set Hour
+    lv_obj_t* row1_6 = lv_obj_create(cont);
+    lv_obj_set_width(row1_6, lv_pct(90));
+    lv_obj_set_height(row1_6, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row1_6, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row1_6, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row1_6, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(row1_6, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_row(row1_6, 5, LV_PART_MAIN);
+
+    ui_LabelHourVal = lv_label_create(row1_6);
+    lv_label_set_text(ui_LabelHourVal, "Hour: 12");
+    lv_obj_set_style_text_color(ui_LabelHourVal, lv_color_16(current_colors.text), LV_PART_MAIN);
+
+    lv_obj_t* hour_ctrl = lv_obj_create(row1_6);
+    lv_obj_set_width(hour_ctrl, lv_pct(100));
+    lv_obj_set_height(hour_ctrl, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(hour_ctrl, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(hour_ctrl, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(hour_ctrl, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(hour_ctrl, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_all(hour_ctrl, 0, LV_PART_MAIN);
+
+    ui_BtnHourDec = lv_btn_create(hour_ctrl);
+    lv_obj_set_size(ui_BtnHourDec, 30, 30);
+    lv_obj_t* lbl_h_dec = lv_label_create(ui_BtnHourDec);
+    lv_label_set_text(lbl_h_dec, "<");
+    lv_obj_center(lbl_h_dec);
+    lv_obj_add_event_cb(ui_BtnHourDec, hour_dec_cb, LV_EVENT_CLICKED, NULL);
+
+    ui_SliderHour = lv_slider_create(hour_ctrl);
+    lv_slider_set_range(ui_SliderHour, 0, 23);
+    lv_obj_set_width(ui_SliderHour, lv_pct(60));
+    lv_obj_add_event_cb(ui_SliderHour, hour_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    ui_BtnHourInc = lv_btn_create(hour_ctrl);
+    lv_obj_set_size(ui_BtnHourInc, 30, 30);
+    lv_obj_t* lbl_h_inc = lv_label_create(ui_BtnHourInc);
+    lv_label_set_text(lbl_h_inc, ">");
+    lv_obj_center(lbl_h_inc);
+    lv_obj_add_event_cb(ui_BtnHourInc, hour_inc_cb, LV_EVENT_CLICKED, NULL);
+
+    // 1.7 Set Minute
+    lv_obj_t* row1_7 = lv_obj_create(cont);
+    lv_obj_set_width(row1_7, lv_pct(90));
+    lv_obj_set_height(row1_7, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row1_7, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row1_7, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row1_7, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(row1_7, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_row(row1_7, 5, LV_PART_MAIN);
+
+    ui_LabelMinuteVal = lv_label_create(row1_7);
+    lv_label_set_text(ui_LabelMinuteVal, "Minute: 00");
+    lv_obj_set_style_text_color(ui_LabelMinuteVal, lv_color_16(current_colors.text), LV_PART_MAIN);
+
+    lv_obj_t* min_ctrl = lv_obj_create(row1_7);
+    lv_obj_set_width(min_ctrl, lv_pct(100));
+    lv_obj_set_height(min_ctrl, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(min_ctrl, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(min_ctrl, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(min_ctrl, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(min_ctrl, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_all(min_ctrl, 0, LV_PART_MAIN);
+
+    ui_BtnMinDec = lv_btn_create(min_ctrl);
+    lv_obj_set_size(ui_BtnMinDec, 30, 30);
+    lv_obj_t* lbl_m_dec = lv_label_create(ui_BtnMinDec);
+    lv_label_set_text(lbl_m_dec, "<");
+    lv_obj_center(lbl_m_dec);
+    lv_obj_add_event_cb(ui_BtnMinDec, min_dec_cb, LV_EVENT_CLICKED, NULL);
+
+    ui_SliderMinute = lv_slider_create(min_ctrl);
+    lv_slider_set_range(ui_SliderMinute, 0, 59);
+    lv_obj_set_width(ui_SliderMinute, lv_pct(60));
+    lv_obj_add_event_cb(ui_SliderMinute, minute_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    ui_BtnMinInc = lv_btn_create(min_ctrl);
+    lv_obj_set_size(ui_BtnMinInc, 30, 30);
+    lv_obj_t* lbl_m_inc = lv_label_create(ui_BtnMinInc);
+    lv_label_set_text(lbl_m_inc, ">");
+    lv_obj_center(lbl_m_inc);
+    lv_obj_add_event_cb(ui_BtnMinInc, min_inc_cb, LV_EVENT_CLICKED, NULL);
+
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo, 100)) {
+        lv_slider_set_value(ui_SliderHour, timeinfo.tm_hour, LV_ANIM_OFF);
+        char hbuf[16];
+        snprintf(hbuf, sizeof(hbuf), "Hour: %02d", timeinfo.tm_hour);
+        lv_label_set_text(ui_LabelHourVal, hbuf);
+
+        lv_slider_set_value(ui_SliderMinute, timeinfo.tm_min, LV_ANIM_OFF);
+        char mbuf[16];
+        snprintf(mbuf, sizeof(mbuf), "Minute: %02d", timeinfo.tm_min);
+        lv_label_set_text(ui_LabelMinuteVal, mbuf);
+    } else {
+        lv_slider_set_value(ui_SliderHour, 12, LV_ANIM_OFF);
+        lv_slider_set_value(ui_SliderMinute, 0, LV_ANIM_OFF);
+    }
+
+    if (settings.getWifiEnabled() && settings.getWifiSSID().length() > 0 && settings.getNtpServer().length() > 0) {
+        lv_obj_add_state(ui_SliderHour, LV_STATE_DISABLED);
+        lv_obj_add_state(ui_BtnHourDec, LV_STATE_DISABLED);
+        lv_obj_add_state(ui_BtnHourInc, LV_STATE_DISABLED);
+        lv_obj_add_state(ui_SliderMinute, LV_STATE_DISABLED);
+        lv_obj_add_state(ui_BtnMinDec, LV_STATE_DISABLED);
+        lv_obj_add_state(ui_BtnMinInc, LV_STATE_DISABLED);
+    }
 
     // 2. Screen Brightness
     lv_obj_t* row2 = lv_obj_create(cont);
@@ -428,6 +665,13 @@ void ui_update(void) {
 }
 
 void ui_sync_toggles(void) {
+    if (ui_SwitchWifiEnabled) {
+        bool ui_checked = lv_obj_has_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
+        if (ui_checked != settings.getWifiEnabled()) {
+            if (settings.getWifiEnabled()) lv_obj_add_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
+            else lv_obj_clear_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
+        }
+    }
     if (ui_Switch24Hour) {
         bool ui_checked = lv_obj_has_state(ui_Switch24Hour, LV_STATE_CHECKED);
         if (ui_checked != settings.getUse24HourFormat()) {
@@ -472,6 +716,25 @@ void ui_sync_toggles(void) {
             lv_slider_set_value(ui_LedBrightnessSlider, set_val, LV_ANIM_OFF);
         }
     }
+
+    if (ui_SliderHour) {
+        bool disable_time = (settings.getWifiEnabled() && settings.getWifiSSID().length() > 0 && settings.getNtpServer().length() > 0);
+        if (disable_time) {
+            lv_obj_add_state(ui_SliderHour, LV_STATE_DISABLED);
+            lv_obj_add_state(ui_BtnHourDec, LV_STATE_DISABLED);
+            lv_obj_add_state(ui_BtnHourInc, LV_STATE_DISABLED);
+            lv_obj_add_state(ui_SliderMinute, LV_STATE_DISABLED);
+            lv_obj_add_state(ui_BtnMinDec, LV_STATE_DISABLED);
+            lv_obj_add_state(ui_BtnMinInc, LV_STATE_DISABLED);
+        } else {
+            lv_obj_clear_state(ui_SliderHour, LV_STATE_DISABLED);
+            lv_obj_clear_state(ui_BtnHourDec, LV_STATE_DISABLED);
+            lv_obj_clear_state(ui_BtnHourInc, LV_STATE_DISABLED);
+            lv_obj_clear_state(ui_SliderMinute, LV_STATE_DISABLED);
+            lv_obj_clear_state(ui_BtnMinDec, LV_STATE_DISABLED);
+            lv_obj_clear_state(ui_BtnMinInc, LV_STATE_DISABLED);
+        }
+    }
 }
 
 void ui_update_time(const char* time_str) {
@@ -484,8 +747,10 @@ void hideScreenSaver(void) {}
 static lv_obj_t* ui_ScreenAP = nullptr;
 static lv_obj_t* ui_LabelAPSSID = nullptr;
 
-static void ap_restart_btn_event_cb(lv_event_t * e) {
-    ESP.restart();
+static void ap_disable_wifi_btn_event_cb(lv_event_t * e) {
+    settings.setWifiEnabled(false);
+    settings.setChanged();
+    ui_hide_ap_mode();
 }
 
 void ui_show_ap_mode(const char* apSSID) {
@@ -517,10 +782,10 @@ void ui_show_ap_mode(const char* apSSID) {
         lv_obj_set_size(btn_restart, 200, 50);
         lv_obj_align(btn_restart, LV_ALIGN_BOTTOM_MID, 0, -20);
         lv_obj_set_style_bg_color(btn_restart, lv_color_16(current_colors.red), 0);
-        lv_obj_add_event_cb(btn_restart, ap_restart_btn_event_cb, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(btn_restart, ap_disable_wifi_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
         lv_obj_t * lbl_btn = lv_label_create(btn_restart);
-        lv_label_set_text(lbl_btn, "Restart Device");
+        lv_label_set_text(lbl_btn, "Disable WiFi");
         lv_obj_set_style_text_color(lbl_btn, lv_color_16(current_colors.base), 0);
         lv_obj_center(lbl_btn);
     }

@@ -32,6 +32,7 @@ private:
     String _mqttUser;
     String _mqttPassword;
     String _mqttBaseTopic;
+    bool _wifiEnabled;
     String _wifiSSID;
     String _wifiPassword;
     bool _screensaverEnabled;
@@ -41,6 +42,7 @@ private:
     String _ntpServer;
     bool _use24HourFormat;
     bool _showSeconds;
+    float _rtcDrift;
 
 public:
     SettingsManager();
@@ -51,6 +53,9 @@ public:
     
     bool getShowSeconds() const;
     void setShowSeconds(bool showSeconds);
+
+    float getRtcDrift() const;
+    void setRtcDrift(float rtcDrift);
     
     
     int getBrightness() const;
@@ -94,6 +99,9 @@ public:
     void setMqttPassword(const String& mqttPassword);
     const String& getMqttBaseTopic() const;
     void setMqttBaseTopic(const String& mqttBaseTopic);
+
+    bool getWifiEnabled() const;
+    void setWifiEnabled(bool enabled);
 
     const String& getWifiSSID() const;
     void setWifiSSID(const String& ssid);

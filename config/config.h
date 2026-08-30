@@ -3,13 +3,14 @@
 
 #include "secrets.h"
 
-
-
 // NTP and Timezone Settings
 // Note: We use POSIX strings for efficiency to avoid bundling a giant tzdata lookup table.
 // Find your region's POSIX string here: https://gist.github.com/alwynallan/24d96091655391107939
 #define NTP_SERVER "pool.ntp.org"
 #define TIMEZONE_DEFAULT "UTC0"       // POSIX Timezone string
+
+// Wi-Fi Settings
+#define WIFI_ENABLED false
 
 // US Eastern
 // #define TIMEZONE_DEFAULT "EST5EDT,M3.2.0,M11.1.0"

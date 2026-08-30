@@ -15,6 +15,11 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
   - Accurate, synchronized time display updated every second.
   - Automatic time synchronization via Network Time Protocol (NTP).
   - Native POSIX timezone string support with automatic Daylight Saving Time (DST) calculations.
+  - Manual fallback time setting capability via the device UI or API.
+  - Built-in RTC Drift Compensation software to maintain accuracy when offline.
+- **Offline & True Standby**:
+  - Entirely functional without an internet connection.
+  - Toggle Wi-Fi radio fully off directly from device settings.
 - **12 / 24-Hour Time Format & Seconds Toggle**:
   - Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes and toggle seconds on/off via the touchscreen interface.
 - **Catppuccin Color Themes**:
@@ -111,6 +116,7 @@ Settings can be adjusted via the touchscreen interface:
 
 | Setting | Description |
 | :--- | :--- |
+| **Enable WiFi** | Toggle the Wi-Fi radio on or off for true offline capability. |
 | **Theme (Catppuccin)** | Select UI color theme flavor (**Mocha**, **Macchiato**, **Frappé**, **Latte**). |
 | **Time Format** | Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes. |
 | **Show Seconds** | Toggle displaying seconds on the clock face. |
@@ -150,6 +156,7 @@ Example JSON response:
   "mqtt_user": "",
   "mqtt_password": "",
   "mqtt_base_topic": "cyd/",
+  "wifi_enabled": true,
   "wifi_ssid": "Your_SSID",
   "wifi_password": "Your_Password",
   "screensaver_enabled": false,
@@ -163,16 +170,25 @@ Example JSON response:
   "static_subnet": "255.255.255.0",
   "static_dns": "1.1.1.1",
   "ap_password": "",
-  "ntp_server": "pool.ntp.org"
+  "ntp_server": "pool.ntp.org",
+  "rtc_drift": 0.0
 }
 ```
 
 **Update Configuration Settings:**
 ```bash
 curl -X POST -H "Content-Type: application/json" \
-  -d '{"brightness": 80, "led_enabled": true, "led_brightness": 50}' \
+  -d '{"brightness": 80, "led_enabled": true, "led_brightness": 50, "rtc_drift": 1.5}' \
   http://<DEVICE_IP>/api/config
 ```
+
+**Set Device Time:**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"timestamp": 1700000000}' \
+  http://<DEVICE_IP>/api/time
+```
+*(Or use `{"time": "2023-01-01T12:00:00"}`)*
 
 ---
 
@@ -197,6 +213,7 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>settings/show_seconds` | Show seconds switch | `ON` / `OFF` |
 | `<base_topic>settings/auto_brightness` | Auto-brightness switch | `ON` / `OFF` |
 | `<base_topic>settings/brightness` | Screen brightness percentage | `10`–`100` |
+| `<base_topic>settings/wifi_enabled` | Wi-Fi radio switch | `ON` / `OFF` |
 | `<base_topic>settings/led_enabled` | Status LED switch | `ON` / `OFF` |
 | `<base_topic>settings/led_brightness` | Status LED brightness percentage | `10`–`100` |
 
@@ -210,8 +227,10 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>command/show_seconds` | `ON` / `OFF` / `1` / `0` | Toggles showing seconds on clock display. |
 | `<base_topic>command/auto_brightness` | `ON` / `OFF` / `1` / `0` | Toggles LDR-driven automatic brightness. |
 | `<base_topic>command/brightness` | `10`–`100` | Adjusts the display backlight brightness percentage. |
+| `<base_topic>command/wifi_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the Wi-Fi radio. |
 | `<base_topic>command/led_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the status RGB LED. |
 | `<base_topic>command/led_brightness` | `10`–`100` | Adjusts the status RGB LED brightness percentage. |
+| `<base_topic>command/set_time` | `1700000000` | Sets the device time manually using a Unix timestamp. |
 
 ---
 

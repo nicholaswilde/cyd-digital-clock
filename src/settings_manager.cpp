@@ -25,6 +25,7 @@ SettingsManager::SettingsManager() {
     _mqttUser = MQTT_USER;
     _mqttPassword = MQTT_PASSWORD;
     _mqttBaseTopic = "cyd/";
+    _wifiEnabled = WIFI_ENABLED;
     _wifiSSID = WIFI_SSID;
     _wifiPassword = WIFI_PASSWORD;
     _screensaverEnabled = SCREENSAVER_ENABLED;
@@ -45,6 +46,7 @@ SettingsManager::SettingsManager() {
     _sleepScheduleEnabled = DEFAULT_SLEEP_SCHEDULE_ENABLED;
     _sleepStartTime = DEFAULT_SLEEP_START_TIME;
     _sleepEndTime = DEFAULT_SLEEP_END_TIME;
+    _rtcDrift = 0.0f;
 }
 
 void SettingsManager::begin() {
@@ -66,6 +68,7 @@ void SettingsManager::begin() {
     _mqttUser = prefs.getString("mqtt_usr", MQTT_USER);
     _mqttPassword = prefs.getString("mqtt_pwd", MQTT_PASSWORD);
     _mqttBaseTopic = prefs.getString("mqtt_base", "cyd/");
+    _wifiEnabled = prefs.getBool("wifi_en", WIFI_ENABLED);
     _wifiSSID = prefs.getString("wifi_ssid", WIFI_SSID);
     _wifiPassword = prefs.getString("wifi_pass", WIFI_PASSWORD);
     _screensaverEnabled = prefs.getBool("scr_enabled", SCREENSAVER_ENABLED);
@@ -86,6 +89,7 @@ void SettingsManager::begin() {
     _sleepScheduleEnabled = prefs.getBool("sleep_sched", DEFAULT_SLEEP_SCHEDULE_ENABLED);
     _sleepStartTime = prefs.getString("sleep_start", DEFAULT_SLEEP_START_TIME);
     _sleepEndTime = prefs.getString("sleep_end", DEFAULT_SLEEP_END_TIME);
+    _rtcDrift = prefs.getFloat("rtc_drift", 0.0f);
     
     prefs.end();
 }
@@ -150,6 +154,20 @@ void SettingsManager::setThemeFlavor(int flavor) {
         Preferences prefs;
         prefs.begin("settings", false);
         prefs.putInt("theme", _themeFlavor);
+        prefs.end();
+    }
+}
+
+bool SettingsManager::getWifiEnabled() const {
+    return _wifiEnabled;
+}
+
+void SettingsManager::setWifiEnabled(bool enabled) {
+    if (_wifiEnabled != enabled) {
+        _wifiEnabled = enabled;
+        Preferences prefs;
+        prefs.begin("settings", false);
+        prefs.putBool("wifi_en", _wifiEnabled);
         prefs.end();
     }
 }
@@ -496,6 +514,17 @@ void SettingsManager::setShowSeconds(bool showSeconds) {
         Preferences prefs;
         prefs.begin("settings", false);
         prefs.putBool("show_secs", _showSeconds);
+        prefs.end();
+    }
+}
+
+float SettingsManager::getRtcDrift() const { return _rtcDrift; }
+void SettingsManager::setRtcDrift(float rtcDrift) {
+    if (_rtcDrift != rtcDrift) {
+        _rtcDrift = rtcDrift;
+        Preferences prefs;
+        prefs.begin("settings", false);
+        prefs.putFloat("rtc_drift", _rtcDrift);
         prefs.end();
     }
 }

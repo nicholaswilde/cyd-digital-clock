@@ -20,6 +20,7 @@ class WifiManager {
 public:
     WifiManager(const char* ssid, const char* password);
     void begin();
+    void stop();
     void update();
     WifiState getState() const;
     String getIPAddress() const;
