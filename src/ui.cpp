@@ -434,7 +434,7 @@ void ui_init(void) {
 
     ui_Switch24Hour = lv_switch_create(row1);
     if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
-    lv_obj_add_event_cb(ui_Switch24Hour, switch_24hr_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Switch24Hour, switch_24hr_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // 1.2 Show Seconds
     lv_obj_t* row1_2 = lv_obj_create(cont);
@@ -451,7 +451,7 @@ void ui_init(void) {
 
     ui_SwitchShowSeconds = lv_switch_create(row1_2);
     if (settings.getShowSeconds()) lv_obj_add_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
-    lv_obj_add_event_cb(ui_SwitchShowSeconds, switch_show_seconds_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SwitchShowSeconds, switch_show_seconds_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // 1.5 Auto Brightness
     lv_obj_t* row1_5 = lv_obj_create(cont);
@@ -468,7 +468,7 @@ void ui_init(void) {
 
     ui_SwitchAutoBrightness = lv_switch_create(row1_5);
     if (settings.getAutoBrightness()) lv_obj_add_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
-    lv_obj_add_event_cb(ui_SwitchAutoBrightness, switch_auto_bright_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SwitchAutoBrightness, switch_auto_bright_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // 0. Enable WiFi
     lv_obj_t* row_wifi_en = lv_obj_create(cont);
@@ -485,7 +485,7 @@ void ui_init(void) {
 
     ui_SwitchWifiEnabled = lv_switch_create(row_wifi_en);
     if (settings.getWifiEnabled()) lv_obj_add_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
-    lv_obj_add_event_cb(ui_SwitchWifiEnabled, switch_wifi_enabled_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SwitchWifiEnabled, switch_wifi_enabled_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // 0c. Enable Hardware RTC
     lv_obj_t* row_rtc_en = lv_obj_create(cont);
@@ -502,7 +502,7 @@ void ui_init(void) {
 
     ui_SwitchRtc = lv_switch_create(row_rtc_en);
     if (settings.getUseRtc()) lv_obj_add_state(ui_SwitchRtc, LV_STATE_CHECKED);
-    lv_obj_add_event_cb(ui_SwitchRtc, switch_rtc_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SwitchRtc, switch_rtc_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // 1.6 Set Hour
     lv_obj_t* row1_6 = lv_obj_create(cont);
