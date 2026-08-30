@@ -98,6 +98,9 @@ void setup() {
     wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
     if (settings.getWifiEnabled()) {
         wifi.begin();
+        if (wifi.getState() == WIFI_STATE_AP_MODE) {
+            ui_show_ap_mode(wifi.getAPSSID().c_str());
+        }
     } else {
         wifi.stop();
     }
@@ -233,7 +236,7 @@ void loop() {
     // mqtt.update();
 
     bool isAPMode = (wifi.getState() == WIFI_STATE_AP_MODE);
-    static bool wasAPMode = false;
+    static bool wasAPMode = (wifi.getState() == WIFI_STATE_AP_MODE); // seed from boot state
     if (isAPMode && !wasAPMode) {
         ui_show_ap_mode(wifi.getAPSSID().c_str());
         wasAPMode = true;
