@@ -173,6 +173,9 @@ void MqttManager::publishHADiscovery() {
     String wifiEnPayload = "{\"name\":\"WiFi Enabled\",\"state_topic\":\"" + _baseTopic + "settings/wifi_enabled\",\"command_topic\":\"" + _baseTopic + "command/wifi_enabled\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_wifi_enabled\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/switch/" + deviceId + "/wifi_enabled/config").c_str(), 0, true, wifiEnPayload.c_str());
 
+    String rtcEnPayload = "{\"name\":\"Hardware RTC Backup\",\"state_topic\":\"" + _baseTopic + "settings/use_rtc\",\"command_topic\":\"" + _baseTopic + "command/use_rtc\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_use_rtc\"," + deviceJson + "}";
+    _mqttClient.publish(("homeassistant/switch/" + deviceId + "/use_rtc/config").c_str(), 0, true, rtcEnPayload.c_str());
+
     // Screensaver (Switch)
     String ssPayload = "{\"name\":\"Screensaver\",\"state_topic\":\"" + _baseTopic + "settings/screensaver\",\"command_topic\":\"" + _baseTopic + "command/screensaver\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_screensaver\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/switch/" + deviceId + "/screensaver/config").c_str(), 0, true, ssPayload.c_str());

@@ -42,6 +42,7 @@ private:
     String _ntpServer;
     bool _use24HourFormat;
     bool _showSeconds;
+    bool _useRtc;
     float _rtcDrift;
 
 public:
@@ -49,10 +50,13 @@ public:
     void begin();
     
     bool getUse24HourFormat() const;
-    void setUse24HourFormat(bool use24Hour);
+    void setUse24HourFormat(bool use24HourFormat);
     
     bool getShowSeconds() const;
     void setShowSeconds(bool showSeconds);
+
+    bool getUseRtc() const;
+    void setUseRtc(bool useRtc);
 
     float getRtcDrift() const;
     void setRtcDrift(float rtcDrift);

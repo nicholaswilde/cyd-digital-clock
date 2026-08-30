@@ -120,6 +120,11 @@ button:hover { background: #f5c2e7; }
 </div>
 
 <div class='checkbox-group'>
+    <input type='checkbox' id='use_rtc' name='use_rtc' value='1' %USE_RTC%>
+    <label for='use_rtc' title='Enable DS3231 Hardware RTC'>Hardware RTC Backup</label>
+</div>
+
+<div class='checkbox-group'>
     <input type='checkbox' id='led_enabled' name='led_enabled' value='1' %LED_ENABLED%>
     <label for='led_enabled' title='Enable or disable the onboard RGB LED'>RGB LED Enabled</label>
 </div>

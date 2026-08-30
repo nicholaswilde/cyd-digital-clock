@@ -4,7 +4,8 @@
 #include "config/config.h"
 
 #ifndef NATIVE_TEST
-#include "screenshot_manager.h"
+#include "include/screenshot_manager.h"
+#include "include/rtc_manager.h"
 #include "sd_card_manager.h"
 #include <lvgl.h>
 #include <SD.h>
@@ -546,6 +547,38 @@ void WifiManager::startWebServer() {
     _webServer->on("/screenshot", [this]() { handleScreenshot(); });
     _webServer->on("/settings", HTTP_GET, [this]() { handleSettings(); });
     _webServer->on("/settings/save", HTTP_POST, [this]() { handleSettingsSave(); });
+
+    _webServer->on("/api/time", HTTP_POST, [this]() {
+        if (!settings.getApiServerEnabled()) {
+            _webServer->send(403, "text/plain", "Forbidden: API server disabled in settings");
+            return;
+        }
+        if (!_webServer->hasArg("plain")) {
+            _webServer->send(400, "text/plain", "Body not received");
+            return;
+        }
+        
+        DynamicJsonDocument doc(512);
+        DeserializationError error = deserializeJson(doc, _webServer->arg("plain"));
+        if (error) {
+            _webServer->send(400, "text/plain", "Invalid JSON");
+            return;
+        }
+        
+        if (doc.containsKey("timestamp")) {
+            long ts = doc["timestamp"].as<long>();
+            struct timeval tv;
+            tv.tv_sec = ts;
+            tv.tv_usec = 0;
+            settimeofday(&tv, NULL);
+#ifndef NATIVE_TEST
+            RtcManager::syncFromSystem();
+#endif
+            _webServer->send(200, "application/json", "{\"success\":true}");
+        } else {
+            _webServer->send(400, "text/plain", "Missing timestamp");
+        }
+    });
     _webServer->on("/api/config", HTTP_GET, [this]() {
         if (!settings.getApiServerEnabled()) {
             _webServer->send(403, "text/plain", "Forbidden: API server disabled in settings");
@@ -553,6 +586,7 @@ void WifiManager::startWebServer() {
         }
         DynamicJsonDocument doc(2048);
         doc["use_24hr_format"] = settings.getUse24HourFormat();
+        doc["use_rtc"] = settings.getUseRtc();
         doc["show_seconds"] = settings.getShowSeconds();
         doc["brightness"] = settings.getBrightness();
         doc["auto_brightness"] = settings.getAutoBrightness();
@@ -607,6 +641,7 @@ void WifiManager::startWebServer() {
             return;
         }
         if (doc.containsKey("use_24hr_format")) settings.setUse24HourFormat(doc["use_24hr_format"]);
+        if (doc.containsKey("use_rtc")) settings.setUseRtc(doc["use_rtc"]);
         if (doc.containsKey("show_seconds")) settings.setShowSeconds(doc["show_seconds"]);
         if (doc.containsKey("brightness")) settings.setBrightness(doc["brightness"]);
         if (doc.containsKey("auto_brightness")) settings.setAutoBrightness(doc["auto_brightness"]);
@@ -787,7 +822,8 @@ void WifiManager::handleSettings() {
     
     html.replace("%FORMAT_12HR%", settings.getUse24HourFormat() ? "" : "selected");
     html.replace("%FORMAT_24HR%", settings.getUse24HourFormat() ? "selected" : "");
-    
+    html.replace("%WIFI_ENABLED%", settings.getWifiEnabled() ? "checked" : "");
+    html.replace("%USE_RTC%", settings.getUseRtc() ? "checked" : "");
     html.replace("%THEME_MOCHA%", settings.getThemeFlavor() == CATPPUCCIN_MOCHA ? "selected" : "");
     html.replace("%THEME_MACCHIATO%", settings.getThemeFlavor() == CATPPUCCIN_MACCHIATO ? "selected" : "");
     html.replace("%THEME_FRAPPE%", settings.getThemeFlavor() == CATPPUCCIN_FRAPPE ? "selected" : "");
@@ -848,6 +884,11 @@ void WifiManager::handleSettings() {
 
 void WifiManager::handleSettingsSave() {
     if (_webServer->hasArg("use_24hr_format")) settings.setUse24HourFormat(_webServer->arg("use_24hr_format").toInt() == 1);
+    else settings.setUse24HourFormat(false);
+    
+    if (_webServer->hasArg("use_rtc")) settings.setUseRtc(_webServer->arg("use_rtc").toInt() == 1);
+    else settings.setUseRtc(false);
+    
     if (_webServer->hasArg("theme_flavor")) settings.setThemeFlavor(_webServer->arg("theme_flavor").toInt());
     if (_webServer->hasArg("screen_orientation")) settings.setScreenOrientation(_webServer->arg("screen_orientation").toInt());
     

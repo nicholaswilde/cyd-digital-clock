@@ -89,6 +89,7 @@ void SettingsManager::begin() {
     _sleepScheduleEnabled = prefs.getBool("sleep_sched", DEFAULT_SLEEP_SCHEDULE_ENABLED);
     _sleepStartTime = prefs.getString("sleep_start", DEFAULT_SLEEP_START_TIME);
     _sleepEndTime = prefs.getString("sleep_end", DEFAULT_SLEEP_END_TIME);
+    _useRtc = prefs.getBool("use_rtc", USE_DS3231_RTC);
     _rtcDrift = prefs.getFloat("rtc_drift", 0.0f);
     
     prefs.end();
@@ -514,6 +515,17 @@ void SettingsManager::setShowSeconds(bool showSeconds) {
         Preferences prefs;
         prefs.begin("settings", false);
         prefs.putBool("show_secs", _showSeconds);
+        prefs.end();
+    }
+}
+
+bool SettingsManager::getUseRtc() const { return _useRtc; }
+void SettingsManager::setUseRtc(bool useRtc) {
+    if (_useRtc != useRtc) {
+        _useRtc = useRtc;
+        Preferences prefs;
+        prefs.begin("settings", false);
+        prefs.putBool("use_rtc", _useRtc);
         prefs.end();
     }
 }

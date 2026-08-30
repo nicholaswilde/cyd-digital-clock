@@ -69,6 +69,22 @@ extern int getCurrentThemeFlavor();
 // LED_BRIGHTNESS: Default LED brightness (0–255). Full brightness = 255.
 #define LED_BRIGHTNESS 255
 
+// -----------------------------------------------------------------------------
+// RTC Configuration
+// -----------------------------------------------------------------------------
+// Enables DS3231 RTC support over I2C
+#ifndef USE_DS3231_RTC
+#define USE_DS3231_RTC true
+#endif
+
+#if TFT_BL == 21
+#define RTC_SDA_PIN 27
+#define RTC_SCL_PIN 22
+#else
+#define RTC_SDA_PIN 21
+#define RTC_SCL_PIN 22
+#endif
+
 // MQTT default status setting
 #define MQTT_ENABLED false
 

@@ -1,5 +1,7 @@
 #define lv_color_16(c) ((lv_color_t){.full = (c)})
 #include "include/ui.h"
+#include "include/screensaver_manager.h"
+#include "include/rtc_manager.h"
 #include "include/catppuccin.h"
 #include "include/settings_manager.h"
 #include "include/wifi_manager.h"
@@ -23,6 +25,7 @@ static lv_obj_t* ui_LedBrightnessSlider = nullptr;
 static lv_obj_t* ui_WifiIcon = nullptr;
 static lv_obj_t* ui_WifiModal = nullptr;
 static lv_obj_t* ui_SwitchWifiEnabled = nullptr;
+static lv_obj_t* ui_SwitchRtc = nullptr;
 
 static lv_obj_t* ui_SliderHour = nullptr;
 static lv_obj_t* ui_LabelHourVal = nullptr;
@@ -192,6 +195,13 @@ static void switch_wifi_enabled_event_cb(lv_event_t * e) {
     }
 }
 
+static void switch_rtc_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        settings.setUseRtc(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
+        settings.setChanged();
+    }
+}
+
 static void switch_24hr_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
         settings.setUse24HourFormat(lv_obj_has_state(lv_event_get_target(e), LV_STATE_CHECKED));
@@ -275,6 +285,9 @@ void update_system_time(int hour, int min) {
         tv.tv_sec = mktime(&timeinfo);
         tv.tv_usec = 0;
         settimeofday(&tv, NULL);
+#ifndef NATIVE_TEST
+        RtcManager::syncFromSystem();
+#endif
     }
 }
 
@@ -474,6 +487,23 @@ void ui_init(void) {
     if (settings.getWifiEnabled()) lv_obj_add_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
     lv_obj_add_event_cb(ui_SwitchWifiEnabled, switch_wifi_enabled_event_cb, LV_EVENT_ALL, NULL);
 
+    // 0c. Enable Hardware RTC
+    lv_obj_t* row_rtc_en = lv_obj_create(cont);
+    lv_obj_set_width(row_rtc_en, lv_pct(90));
+    lv_obj_set_height(row_rtc_en, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row_rtc_en, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row_rtc_en, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row_rtc_en, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row_rtc_en, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_rtc_en = lv_label_create(row_rtc_en);
+    lv_label_set_text(label_rtc_en, "Enable Hardware RTC");
+    lv_obj_set_style_text_color(label_rtc_en, lv_color_16(current_colors.text), LV_PART_MAIN);
+
+    ui_SwitchRtc = lv_switch_create(row_rtc_en);
+    if (settings.getUseRtc()) lv_obj_add_state(ui_SwitchRtc, LV_STATE_CHECKED);
+    lv_obj_add_event_cb(ui_SwitchRtc, switch_rtc_event_cb, LV_EVENT_ALL, NULL);
+
     // 1.6 Set Hour
     lv_obj_t* row1_6 = lv_obj_create(cont);
     lv_obj_set_width(row1_6, lv_pct(90));
@@ -665,6 +695,13 @@ void ui_update(void) {
 }
 
 void ui_sync_toggles(void) {
+    if (ui_SwitchRtc) {
+        bool ui_checked = lv_obj_has_state(ui_SwitchRtc, LV_STATE_CHECKED);
+        if (ui_checked != settings.getUseRtc()) {
+            if (settings.getUseRtc()) lv_obj_add_state(ui_SwitchRtc, LV_STATE_CHECKED);
+            else lv_obj_clear_state(ui_SwitchRtc, LV_STATE_CHECKED);
+        }
+    }
     if (ui_SwitchWifiEnabled) {
         bool ui_checked = lv_obj_has_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
         if (ui_checked != settings.getWifiEnabled()) {

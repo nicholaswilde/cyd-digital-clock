@@ -12,6 +12,7 @@
 #include "include/screensaver_manager.h"
 #include "include/screenshot_manager.h"
 #include "include/sd_card_manager.h"
+#include "include/rtc_manager.h"
 #include <time.h>
 
 SettingsManager settings;
@@ -53,6 +54,8 @@ void timeSyncCallback(struct timeval *tv) {
     }
     _lastSyncMillis = currentMillis;
     _lastSyncTime = *tv;
+    
+    RtcManager::syncFromSystem();
     _hasNtpSynced = true;
     Serial.println("[System] NTP Time Synced.");
 }
@@ -71,6 +74,7 @@ void setup() {
     led.begin();
     led.setEnabled(settings.getLedEnabled());
     led.setBrightness(settings.getLedBrightness());
+    RtcManager::begin();
 
     // 3. Display & Touch
     initDisplayAndTouch();
@@ -99,14 +103,16 @@ void setup() {
     time_t now;
     time(&now);
     if (now < 100000) { 
-        struct tm timeinfo = {0};
-        timeinfo.tm_hour = 12;
-        timeinfo.tm_mday = 1;
-        timeinfo.tm_year = 124; // 2024
-        struct timeval tv;
-        tv.tv_sec = mktime(&timeinfo);
-        tv.tv_usec = 0;
-        settimeofday(&tv, NULL);
+        if (!RtcManager::syncToSystem()) {
+            struct tm timeinfo = {0};
+            timeinfo.tm_hour = 12;
+            timeinfo.tm_mday = 1;
+            timeinfo.tm_year = 124; // 2024
+            struct timeval tv;
+            tv.tv_sec = mktime(&timeinfo);
+            tv.tv_usec = 0;
+            settimeofday(&tv, NULL);
+        }
     }
 
     // 6. MQTT
@@ -115,7 +121,13 @@ void setup() {
             settings.setUse24HourFormat(payload == "ON");
             settings.setChanged();
         } else if (topic.endsWith("command/show_seconds")) {
-            settings.setShowSeconds(payload == "ON");
+            settings.setShowSeconds(payload == "ON" || payload == "1");
+            settings.setChanged();
+        } else if (topic.endsWith("command/wifi_enabled")) {
+            settings.setWifiEnabled(payload == "ON" || payload == "1");
+            settings.setChanged();
+        } else if (topic.endsWith("command/use_rtc")) {
+            settings.setUseRtc(payload == "ON" || payload == "1");
             settings.setChanged();
         } else if (topic.endsWith("command/led_enabled")) {
             settings.setLedEnabled(payload == "ON");
@@ -300,6 +312,8 @@ void loop() {
         mqtt.publish("system/mac", WiFi.macAddress().c_str(), true);
         mqtt.publish("settings/use_24hr_format", settings.getUse24HourFormat() ? "ON" : "OFF", true);
         mqtt.publish("settings/show_seconds", settings.getShowSeconds() ? "ON" : "OFF", true);
+        mqtt.publish("settings/wifi_enabled", settings.getWifiEnabled() ? "ON" : "OFF", true);
+        mqtt.publish("settings/use_rtc", settings.getUseRtc() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_enabled", settings.getLedEnabled() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
         mqtt.publish("settings/auto_brightness", settings.getAutoBrightness() ? "ON" : "OFF", true);
