@@ -47,6 +47,45 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
 - **Onboard Hardware**: LDR photoresistor (GPIO 34), Backlight PWM (GPIO 21), RGB LED (GPIO 4/16/17), BOOT button (GPIO 0).
 - Micro-USB / USB-C cable for power and programming.
 
+## :electric_plug: Hardware Setup / RTC Wiring
+
+To use the **Hardware RTC Backup** feature, wire a DS3231 I2C Real-Time Clock module to the **CN1** breakout port. Do not use connector P3 near the SD card slot as it lacks a 3.3V power supply.
+
+- **VCC**: 3V3
+- **GND**: GND
+- **SDA**: IO27 (on `cyd_28r`) or IO21 (on `cyd_35c`)
+- **SCL**: IO22
+
+> [!NOTE]
+> On the `cyd_28r` board, the CN1 connector breaks out **IO27**. IO27 must be used for SDA to prevent conflicts with the display backlight on IO21.
+> On the `cyd_35c` board, the CN1 connector breaks out **IO21**. IO21 must be used for SDA to prevent conflicts with the display backlight on IO27.
+
+```text
++------------------------------+
+|                              |
+|                          +------+
+|                          |  P3  |
+|                          +------+
+|                              |
+|                       +---------+
+|                       |   CN1   |      +--------+
+|                       |  GND[X] |------| [X]GND |
+|                       | IO22[X] |------| [X]SCL |
+|                       | IO27[X] |------| [X]SDA |
+|                       | 3.3V[X] |------| [X]VCC |
+|                       +---------+      +--------+
+|                              |           DS3231
+|                          +------+
+|                          |  SD  |
+|                          | CARD |
+|                          +------+
+|                              |
+| +--+ +-------+ +-----------+ |
++-|  |-| USB C |-| MICRO USB |-+
+  +--+ +-------+ +-----------+ 
+         ESP32-2432S028R  
+```
+
 ---
 
 ## :rocket: Getting Started
