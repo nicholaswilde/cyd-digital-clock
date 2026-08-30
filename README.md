@@ -17,6 +17,7 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
   - Native POSIX timezone string support with automatic Daylight Saving Time (DST) calculations.
   - Manual fallback time setting capability via the device UI or API.
   - Built-in RTC Drift Compensation software to maintain accuracy when offline.
+  - **Hardware RTC Backup**: Full integration with I2C DS3231 modules for zero-network timekeeping.
 - **Offline & True Standby**:
   - Entirely functional without an internet connection.
   - Toggle Wi-Fi radio fully off directly from device settings.
@@ -117,6 +118,7 @@ Settings can be adjusted via the touchscreen interface:
 | Setting | Description |
 | :--- | :--- |
 | **Enable WiFi** | Toggle the Wi-Fi radio on or off for true offline capability. |
+| **Hardware RTC Backup** | Toggle integration with an external DS3231 I2C module. |
 | **Theme (Catppuccin)** | Select UI color theme flavor (**Mocha**, **Macchiato**, **Frappé**, **Latte**). |
 | **Time Format** | Toggle between 12-Hour (`HH:MM:SS AM/PM`) and 24-Hour (`HH:MM:SS`) modes. |
 | **Show Seconds** | Toggle displaying seconds on the clock face. |
@@ -140,6 +142,7 @@ Example JSON response:
 ```json
 {
   "use_24hr_format": false,
+  "use_rtc": true,
   "show_seconds": true,
   "brightness": 80,
   "auto_brightness": true,
@@ -214,6 +217,7 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>settings/auto_brightness` | Auto-brightness switch | `ON` / `OFF` |
 | `<base_topic>settings/brightness` | Screen brightness percentage | `10`–`100` |
 | `<base_topic>settings/wifi_enabled` | Wi-Fi radio switch | `ON` / `OFF` |
+| `<base_topic>settings/use_rtc` | Hardware RTC Backup switch | `ON` / `OFF` |
 | `<base_topic>settings/led_enabled` | Status LED switch | `ON` / `OFF` |
 | `<base_topic>settings/led_brightness` | Status LED brightness percentage | `10`–`100` |
 
@@ -228,6 +232,7 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 | `<base_topic>command/auto_brightness` | `ON` / `OFF` / `1` / `0` | Toggles LDR-driven automatic brightness. |
 | `<base_topic>command/brightness` | `10`–`100` | Adjusts the display backlight brightness percentage. |
 | `<base_topic>command/wifi_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the Wi-Fi radio. |
+| `<base_topic>command/use_rtc` | `ON` / `OFF` / `1` / `0` | Enables or disables the hardware RTC backup integration. |
 | `<base_topic>command/led_enabled` | `ON` / `OFF` / `1` / `0` | Enables or disables the status RGB LED. |
 | `<base_topic>command/led_brightness` | `10`–`100` | Adjusts the status RGB LED brightness percentage. |
 | `<base_topic>command/set_time` | `1700000000` | Sets the device time manually using a Unix timestamp. |
