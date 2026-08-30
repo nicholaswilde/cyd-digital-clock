@@ -249,7 +249,11 @@ void loop() {
     if (settings.hasChanged()) {
         Serial.println("[System] Applying updated settings...");
         
-        ui_set_theme(settings.getThemeFlavor());
+        static int lastThemeFlavor = -1;
+        if (settings.getThemeFlavor() != lastThemeFlavor) {
+            lastThemeFlavor = settings.getThemeFlavor();
+            ui_set_theme(settings.getThemeFlavor());
+        }
         if (!settings.getAutoBrightness()) {
             backlight.setManualBrightness(settings.getBrightness());
         }
