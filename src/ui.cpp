@@ -1,3 +1,4 @@
+#define lv_color_16(c) ((lv_color_t){.full = (c)})
 #include "include/ui.h"
 #include "include/catppuccin.h"
 #include "include/settings_manager.h"
@@ -90,7 +91,7 @@ static void wifi_icon_click_cb(lv_event_t * e) {
     ui_WifiModal = lv_obj_create(ui_ScreenSettings);
     lv_obj_set_size(ui_WifiModal, 320, 240);
     lv_obj_align(ui_WifiModal, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_bg_color(ui_WifiModal, lv_color_hex(current_colors.base), 0);
+    lv_obj_set_style_bg_color(ui_WifiModal, lv_color_16(current_colors.base), 0);
     lv_obj_set_style_border_width(ui_WifiModal, 0, 0);
     lv_obj_clear_flag(ui_WifiModal, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -98,14 +99,14 @@ static void wifi_icon_click_cb(lv_event_t * e) {
     lv_obj_t * lbl_title = lv_label_create(ui_WifiModal);
     lv_label_set_text(lbl_title, "WiFi Info");
     lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_text_color(lbl_title, lv_color_hex(current_colors.text), 0);
+    lv_obj_set_style_text_color(lbl_title, lv_color_16(current_colors.text), 0);
     lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 5);
 
     // Status label
     lv_obj_t * lbl_status = lv_label_create(ui_WifiModal);
     WifiState state = wifi.getState();
     const char* statusStr = "Unknown";
-    uint32_t statusColor = current_colors.text;
+    uint16_t statusColor = current_colors.text;
     if (state == WIFI_STATE_CONNECTED) {
         statusStr = "Connected";
         statusColor = current_colors.green;
@@ -121,7 +122,7 @@ static void wifi_icon_click_cb(lv_event_t * e) {
     }
     
     lv_label_set_text(lbl_status, statusStr);
-    lv_obj_set_style_text_color(lbl_status, lv_color_hex(statusColor), 0);
+    lv_obj_set_style_text_color(lbl_status, lv_color_16(statusColor), 0);
     lv_obj_align(lbl_status, LV_ALIGN_TOP_MID, 0, 30);
 
     // Info details
@@ -134,19 +135,19 @@ static void wifi_icon_click_cb(lv_event_t * e) {
     lv_label_set_text(lbl_info, "SSID: Test\nIP: 192.168.1.2\nHost: ESP32\nMAC: 00:00:00\nRSSI: -50 dBm");
 #endif
     lv_obj_set_style_text_align(lbl_info, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_color(lbl_info, lv_color_hex(current_colors.text), 0);
+    lv_obj_set_style_text_color(lbl_info, lv_color_16(current_colors.text), 0);
     lv_obj_align(lbl_info, LV_ALIGN_TOP_MID, 0, 60);
 
     // Close Button
     lv_obj_t * btn_close = lv_btn_create(ui_WifiModal);
     lv_obj_set_size(btn_close, 100, 32);
     lv_obj_align(btn_close, LV_ALIGN_BOTTOM_MID, 0, -10);
-    lv_obj_set_style_bg_color(btn_close, lv_color_hex(current_colors.overlay), 0);
+    lv_obj_set_style_bg_color(btn_close, lv_color_16(current_colors.overlay0), 0);
     lv_obj_add_event_cb(btn_close, close_wifi_info_cb, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t * lbl_close = lv_label_create(btn_close);
     lv_label_set_text(lbl_close, "Close");
-    lv_obj_set_style_text_color(lbl_close, lv_color_hex(current_colors.crust), 0);
+    lv_obj_set_style_text_color(lbl_close, lv_color_16(current_colors.crust), 0);
     lv_obj_center(lbl_close);
 }
 static void settings_back_event_cb(lv_event_t * e) {
@@ -233,8 +234,8 @@ void ui_init(void) {
     ui_ScreenMain = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_ScreenMain, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(ui_ScreenMain, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(ui_ScreenMain, lv_color_hex(current_colors.mantle), LV_PART_MAIN);
-    lv_obj_set_style_text_color(ui_ScreenMain, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(ui_ScreenMain, lv_color_16(current_colors.mantle), LV_PART_MAIN);
+    lv_obj_set_style_text_color(ui_ScreenMain, lv_color_16(current_colors.text), LV_PART_MAIN);
     lv_obj_add_event_cb(ui_ScreenMain, main_screen_event_cb, LV_EVENT_ALL, NULL);
     
     ui_LabelTime = lv_label_create(ui_ScreenMain);
@@ -244,13 +245,13 @@ void ui_init(void) {
     
     // --- Settings Screen ---
     ui_ScreenSettings = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(ui_ScreenSettings, lv_color_hex(current_colors.crust), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(ui_ScreenSettings, lv_color_16(current_colors.crust), LV_PART_MAIN);
     
     // Title
     lv_obj_t* title = lv_label_create(ui_ScreenSettings);
     lv_label_set_text(title, "Settings");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, LV_PART_MAIN);
-    lv_obj_set_style_text_color(title, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(title, lv_color_16(current_colors.text), LV_PART_MAIN);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
     // Wifi Icon
     ui_WifiIcon = lv_label_create(ui_ScreenSettings);
@@ -259,7 +260,7 @@ void ui_init(void) {
     lv_obj_add_flag(ui_WifiIcon, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_ext_click_area(ui_WifiIcon, 15);
     lv_obj_add_event_cb(ui_WifiIcon, wifi_icon_click_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_hex(current_colors.red), 0);
+    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_16(current_colors.red), 0);
 
 
     // Create a flex container for settings items
@@ -283,16 +284,16 @@ void ui_init(void) {
 
     lv_obj_t* label_theme = lv_label_create(row0);
     lv_label_set_text(label_theme, "Theme");
-    lv_obj_set_style_text_color(label_theme, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_theme, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     lv_obj_t* theme_dropdown = lv_dropdown_create(row0);
     lv_dropdown_set_options(theme_dropdown, "Mocha\nMacchiato\nFrappe\nLatte");
     lv_dropdown_set_selected(theme_dropdown, settings.getThemeFlavor() - 1);
     lv_obj_add_event_cb(theme_dropdown, theme_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_width(theme_dropdown, 130);
-    lv_obj_set_style_bg_color(theme_dropdown, lv_color_hex(current_colors.crust), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(theme_dropdown, lv_color_hex(current_colors.text), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(theme_dropdown, lv_color_hex(current_colors.overlay), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(theme_dropdown, lv_color_16(current_colors.crust), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(theme_dropdown, lv_color_16(current_colors.text), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(theme_dropdown, lv_color_16(current_colors.overlay0), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 1. 24 Hour Format
     lv_obj_t* row1 = lv_obj_create(cont);
@@ -305,7 +306,7 @@ void ui_init(void) {
 
     lv_obj_t* label_24hr = lv_label_create(row1);
     lv_label_set_text(label_24hr, "24 Hour Format");
-    lv_obj_set_style_text_color(label_24hr, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_24hr, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_Switch24Hour = lv_switch_create(row1);
     if (settings.getUse24HourFormat()) lv_obj_add_state(ui_Switch24Hour, LV_STATE_CHECKED);
@@ -322,7 +323,7 @@ void ui_init(void) {
 
     lv_obj_t* label_show_secs = lv_label_create(row1_2);
     lv_label_set_text(label_show_secs, "Show Seconds");
-    lv_obj_set_style_text_color(label_show_secs, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_show_secs, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_SwitchShowSeconds = lv_switch_create(row1_2);
     if (settings.getShowSeconds()) lv_obj_add_state(ui_SwitchShowSeconds, LV_STATE_CHECKED);
@@ -339,7 +340,7 @@ void ui_init(void) {
 
     lv_obj_t* label_auto = lv_label_create(row1_5);
     lv_label_set_text(label_auto, "Auto Brightness");
-    lv_obj_set_style_text_color(label_auto, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_auto, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_SwitchAutoBrightness = lv_switch_create(row1_5);
     if (settings.getAutoBrightness()) lv_obj_add_state(ui_SwitchAutoBrightness, LV_STATE_CHECKED);
@@ -359,7 +360,7 @@ void ui_init(void) {
     char slider_buf[32];
     snprintf(slider_buf, sizeof(slider_buf), "Bright: %d%%", settings.getBrightness());
     lv_label_set_text(label_bright, slider_buf);
-    lv_obj_set_style_text_color(label_bright, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_bright, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_BrightnessSlider = lv_slider_create(row2);
     lv_slider_set_range(ui_BrightnessSlider, 10, 100);
@@ -378,7 +379,7 @@ void ui_init(void) {
 
     lv_obj_t* label_led = lv_label_create(row3);
     lv_label_set_text(label_led, "Status LED");
-    lv_obj_set_style_text_color(label_led, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_led, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_LedSwitch = lv_switch_create(row3);
     if (settings.getLedEnabled()) lv_obj_add_state(ui_LedSwitch, LV_STATE_CHECKED);
@@ -397,7 +398,7 @@ void ui_init(void) {
     int led_pct = (settings.getLedBrightness() * 100) / 255;
     snprintf(slider_buf, sizeof(slider_buf), "LED: %d%%", led_pct);
     lv_label_set_text(label_led_bright, slider_buf);
-    lv_obj_set_style_text_color(label_led_bright, lv_color_hex(current_colors.text), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_led_bright, lv_color_16(current_colors.text), LV_PART_MAIN);
 
     ui_LedBrightnessSlider = lv_slider_create(row4);
     lv_slider_set_range(ui_LedBrightnessSlider, 10, 100);
@@ -490,37 +491,37 @@ static void ap_restart_btn_event_cb(lv_event_t * e) {
 void ui_show_ap_mode(const char* apSSID) {
     if (!ui_ScreenAP) {
         ui_ScreenAP = lv_obj_create(NULL);
-        lv_obj_set_style_bg_color(ui_ScreenAP, lv_color_hex(current_colors.base), LV_PART_MAIN);
+        lv_obj_set_style_bg_color(ui_ScreenAP, lv_color_16(current_colors.base), LV_PART_MAIN);
 
         // Title label
         lv_obj_t * lbl_title = lv_label_create(ui_ScreenAP);
         lv_label_set_text(lbl_title, "CYD Digital Clock");
         lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_20, 0);
-        lv_obj_set_style_text_color(lbl_title, lv_color_hex(current_colors.text), 0);
+        lv_obj_set_style_text_color(lbl_title, lv_color_16(current_colors.text), 0);
         lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 10);
 
         // Status label
         lv_obj_t * lbl_status = lv_label_create(ui_ScreenAP);
         lv_label_set_text(lbl_status, "Captive Portal Active");
-        lv_obj_set_style_text_color(lbl_status, lv_color_hex(current_colors.mauve), 0);
+        lv_obj_set_style_text_color(lbl_status, lv_color_16(current_colors.mauve), 0);
         lv_obj_align(lbl_status, LV_ALIGN_TOP_MID, 0, 50);
 
         // Info details
         ui_LabelAPSSID = lv_label_create(ui_ScreenAP);
         lv_obj_set_style_text_align(ui_LabelAPSSID, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_hex(current_colors.text), 0);
+        lv_obj_set_style_text_color(ui_LabelAPSSID, lv_color_16(current_colors.text), 0);
         lv_obj_align(ui_LabelAPSSID, LV_ALIGN_CENTER, 0, 10);
 
         // Restart Button
         lv_obj_t * btn_restart = lv_btn_create(ui_ScreenAP);
         lv_obj_set_size(btn_restart, 200, 50);
         lv_obj_align(btn_restart, LV_ALIGN_BOTTOM_MID, 0, -20);
-        lv_obj_set_style_bg_color(btn_restart, lv_color_hex(current_colors.red), 0);
+        lv_obj_set_style_bg_color(btn_restart, lv_color_16(current_colors.red), 0);
         lv_obj_add_event_cb(btn_restart, ap_restart_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
         lv_obj_t * lbl_btn = lv_label_create(btn_restart);
         lv_label_set_text(lbl_btn, "Restart Device");
-        lv_obj_set_style_text_color(lbl_btn, lv_color_hex(current_colors.base), 0);
+        lv_obj_set_style_text_color(lbl_btn, lv_color_16(current_colors.base), 0);
         lv_obj_center(lbl_btn);
     }
     
@@ -542,10 +543,10 @@ void ui_hide_ap_mode() {
 void ui_update_wifi_status(int state) {
     if (!ui_WifiIcon) return;
     
-    uint32_t c = current_colors.red;
+    uint16_t c = current_colors.red;
     if (state == WIFI_STATE_CONNECTED) c = current_colors.green;
     else if (state == WIFI_STATE_CONNECTING) c = current_colors.yellow;
     else if (state == WIFI_STATE_AP_MODE) c = current_colors.mauve;
     
-    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_hex(c), 0);
+    lv_obj_set_style_text_color(ui_WifiIcon, lv_color_16(c), 0);
 }

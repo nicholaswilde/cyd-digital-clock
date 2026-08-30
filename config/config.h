@@ -36,7 +36,7 @@ extern int getCurrentThemeFlavor();
 #define COLOR_MANTLE       (getCatppuccinFlavor(getCurrentThemeFlavor()).mantle)
 #define COLOR_CRUST        (getCatppuccinFlavor(getCurrentThemeFlavor()).crust)
 #define COLOR_TEXT         (getCatppuccinFlavor(getCurrentThemeFlavor()).text)
-#define COLOR_OVERLAY      (getCatppuccinFlavor(getCurrentThemeFlavor()).overlay)
+#define COLOR_OVERLAY      (getCatppuccinFlavor(getCurrentThemeFlavor()).overlay0)
 #define COLOR_BLUE         (getCatppuccinFlavor(getCurrentThemeFlavor()).blue)
 #define COLOR_GREEN        (getCatppuccinFlavor(getCurrentThemeFlavor()).green)
 #define COLOR_RED          (getCatppuccinFlavor(getCurrentThemeFlavor()).red)
@@ -44,7 +44,6 @@ extern int getCurrentThemeFlavor();
 #define COLOR_PEACH        (getCatppuccinFlavor(getCurrentThemeFlavor()).peach)
 #define COLOR_MAUVE        (getCatppuccinFlavor(getCurrentThemeFlavor()).mauve)
 #define COLOR_LAVENDER     (getCatppuccinFlavor(getCurrentThemeFlavor()).lavender)
-#define COLOR_HEADER_TEXT  (getCatppuccinFlavor(getCurrentThemeFlavor()).header_text)
 
 
 // Choose Time Format (12 vs 24 hour)
