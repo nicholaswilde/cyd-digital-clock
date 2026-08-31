@@ -25,7 +25,7 @@ tasks:
       - task: test
         ignore_error: true
       - lcov --list lcov.info
-      - defer: rm lcov.info
+      # - defer: rm lcov.info
       
   coverage:upload:
     desc: Generate and upload coverage report to Coveralls.io
