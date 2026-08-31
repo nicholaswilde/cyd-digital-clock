@@ -106,9 +106,9 @@ To use the **Hardware RTC Backup** feature, wire a DS3231 I2C Real-Time Clock mo
 |                          | CARD |
 |                          +------+
 |                              |
-| +--+ +-------+ +-----------+ |
-+-|  |-| USB C |-| MICRO USB |-+
-  +--+ +-------+ +-----------+ 
+| +--+           +-----------+ |
++-|  |-----------| MICRO USB |-+
+  +--+           +-----------+ 
          ESP32-3248S035C    
 ```
 
