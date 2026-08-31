@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 set -e
 
-# Tab map: 0=current, 1=forecast, 2=hourly, 3=settings
+# Screen map: 0=main, 1=settings
 
-TAB=$1
-if [ -z "$TAB" ]; then
-    echo "Usage: $0 <current|forecast|hourly|settings>"
+SCREEN=$1
+if [ -z "$SCREEN" ]; then
+    echo "Usage: $0 <main|settings>"
     exit 1
 fi
 
-case "$TAB" in
-    current) TAB_IDX=0 ;;
-    forecast) TAB_IDX=1 ;;
-    hourly) TAB_IDX=2 ;;
-    settings) TAB_IDX=3 ;;
-    *) echo "Invalid tab: $TAB. Must be current, forecast, hourly, or settings."; exit 1 ;;
+case "$SCREEN" in
+    main) SCREEN_IDX=0 ;;
+    settings) SCREEN_IDX=1 ;;
+    *) echo "Invalid screen: $SCREEN. Must be main or settings."; exit 1 ;;
 esac
 
 # Source .env for CYD_DEVICE_IP
@@ -30,13 +28,13 @@ if [ -z "$CYD_DEVICE_IP" ]; then
     exit 1
 fi
 
-echo "Switching tab to $TAB..."
-curl -sS -m 5 -d "index=${TAB_IDX}" "http://${CYD_DEVICE_IP}/api/tab" > /dev/null || true
+echo "Switching screen to $SCREEN..."
+curl -sS -m 5 -d "index=${SCREEN_IDX}" "http://${CYD_DEVICE_IP}/api/screen" > /dev/null || true
 
 sleep 2
 
 mkdir -p screenshots
-OUT_FILE="screenshots/agent_${TAB}.bmp"
+OUT_FILE="screenshots/agent_${SCREEN}.bmp"
 
 echo "Capturing screenshot..."
 if ! curl -sS -f -m 15 "http://${CYD_DEVICE_IP}/screenshot" -o "${OUT_FILE}"; then
@@ -51,7 +49,7 @@ if command -v uv >/dev/null 2>&1 && [ -f "./scripts/convert-screenshots.py" ]; t
     uv run ./scripts/convert-screenshots.py > /dev/null
 fi
 
-PNG_FILE="screenshots/agent_${TAB}.png"
+PNG_FILE="screenshots/agent_${SCREEN}.png"
 if [ -f "$PNG_FILE" ]; then
     echo "Success! Screenshot saved to $PNG_FILE"
 else

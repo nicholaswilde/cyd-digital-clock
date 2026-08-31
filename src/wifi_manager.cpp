@@ -685,14 +685,14 @@ void WifiManager::startWebServer() {
         settings.setChanged();
         _webServer->send(200, "application/json", "{\"status\":\"ok\"}");
     });
-    _webServer->on("/api/tab", [this]() {
+    _webServer->on("/api/screen", [this]() {
         if (!settings.getApiServerEnabled()) {
             _webServer->send(403, "text/plain", "Forbidden: API server disabled in settings");
             return;
         }
         if (_webServer->hasArg("index")) {
             int idx = _webServer->arg("index").toInt();
-            // setUIActiveTab(idx);
+            setUIActiveTab(idx);
             _webServer->send(200, "text/plain", "Tab updated");
         } else {
             _webServer->send(400, "text/plain", "Missing index parameter");
@@ -705,7 +705,7 @@ void WifiManager::startWebServer() {
         }
         if (_webServer->hasArg("val")) {
             int val = _webServer->arg("val").toInt();
-            // setUIOrientation(val);
+            setUIOrientation(val);
             _webServer->send(200, "text/plain", "Orientation updated");
         } else {
             _webServer->send(400, "text/plain", "Missing val parameter");

@@ -61,23 +61,23 @@ function set_orientation() {
   log "INFO" "Setting orientation to ${rot_name} (val=${rot})..."
   if ! err_msg=$(curl -sS -m 5 -d "val=${rot}" "http://${ip}/api/orientation" 2>&1); then
     log "ERRO" "Connection failed: ${err_msg}" >&2
-    log "WARN" "Please ensure the Cheap Yellow Device is powered on, connected to the same network, and the API Server (API Srv) is turned ON in the Settings tab." >&2
+    log "WARN" "Please ensure the Cheap Yellow Device is powered on, connected to the same network, and the API Server (API Srv) is turned ON in the Settings screen." >&2
     exit 1
   fi
   sleep 2.5
 }
 
-function capture_tab() {
+function capture_screen() {
   local ip="$1"
   local rot_name="$2"
-  local tab="$3"
-  local tab_name="$4"
-  local out_file="screenshots/${rot_name}_${tab_name}.bmp"
+  local screen="$3"
+  local screen_name="$4"
+  local out_file="screenshots/${rot_name}_${screen_name}.bmp"
   local err_msg
 
-  log "INFO" "Setting tab to ${tab_name} (index=${tab})..."
-  if ! err_msg=$(curl -sS -m 5 -d "index=${tab}" "http://${ip}/api/tab" 2>&1); then
-    log "ERRO" "Failed to change tab: ${err_msg}" >&2
+  log "INFO" "Setting screen to ${screen_name} (index=${screen})..."
+  if ! err_msg=$(curl -sS -m 5 -d "index=${screen}" "http://${ip}/api/screen" 2>&1); then
+    log "ERRO" "Failed to change screen: ${err_msg}" >&2
     exit 1
   fi
   sleep 2
@@ -108,22 +108,18 @@ function main() {
 
   # 1. Capture Landscape screens (rotation 1)
   set_orientation "${ip}" 1 "landscape"
-  capture_tab "${ip}" "landscape" 0 "current"
-  capture_tab "${ip}" "landscape" 1 "forecast"
-  capture_tab "${ip}" "landscape" 2 "hourly"
-  capture_tab "${ip}" "landscape" 3 "settings"
+  capture_screen "${ip}" "landscape" 0 "main"
+  capture_screen "${ip}" "landscape" 1 "settings"
 
   # 2. Capture Portrait screens (rotation 2)
   set_orientation "${ip}" 2 "portrait"
-  capture_tab "${ip}" "portrait" 0 "current"
-  capture_tab "${ip}" "portrait" 1 "forecast"
-  capture_tab "${ip}" "portrait" 2 "hourly"
-  capture_tab "${ip}" "portrait" 3 "settings"
+  capture_screen "${ip}" "portrait" 0 "main"
+  capture_screen "${ip}" "portrait" 1 "settings"
 
   # 3. Restore to default Landscape orientation
   log "INFO" "Restoring default Landscape orientation..."
   curl -sS -m 5 -d "val=1" "http://${ip}/api/orientation" > /dev/null || true
-  curl -sS -m 5 -d "index=0" "http://${ip}/api/tab" > /dev/null || true
+  curl -sS -m 5 -d "index=0" "http://${ip}/api/screen" > /dev/null || true
 
   # 4. Automatically convert BMP to PNG
   if commandExists uv && [ -f "./scripts/convert-screenshots.py" ]; then

@@ -5,7 +5,7 @@ description: Skill to read the current device screen to get visual context about
 
 # Agent Screen Reader Skill
 
-This skill allows the agent to take a screenshot of a specific tab on the CYD Weather Station device and read it using the `view_file` tool. 
+This skill allows the agent to take a screenshot of a specific screen on the CYD Digital Clock device and read it using the `view_file` tool. 
 
 ## Prerequisites
 - The device must be on the network.
@@ -15,9 +15,9 @@ This skill allows the agent to take a screenshot of a specific tab on the CYD We
 
 1. Run the `agent-read-screen.sh` script to capture the screen you want to view. You should use `ctx_execute` with `language: shell` if `run_command` is blocked:
    ```shell
-   ./scripts/agent-read-screen.sh <tab>
+   ./scripts/agent-read-screen.sh <screen>
    ```
-   `<tab>` can be `current`, `forecast`, `hourly`, or `settings`.
+   `<screen>` can be `main` or `settings`.
 
 2. The script will output the path to the saved PNG screenshot, for example: `screenshots/agent_settings.png`.
 

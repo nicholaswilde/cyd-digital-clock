@@ -9,6 +9,8 @@ extern lv_obj_t* ui_LabelTime;
 extern lv_obj_t* ui_ScreenSettings;
 
 void ui_init(void);
+void setUIActiveTab(int idx);
+void setUIOrientation(int val);
 void ui_update(void);
 void ui_update_wifi_status(int state);
 void ui_set_theme(int theme_id);

@@ -913,3 +913,18 @@ void ui_update_wifi_status(int state) {
     
     lv_obj_set_style_text_color(ui_WifiIcon, lv_color_16(c), 0);
 }
+
+void setUIActiveTab(int idx) {
+    if (idx == 0) {
+        lv_scr_load_anim(ui_ScreenMain, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+    } else if (idx == 1) {
+        lv_scr_load_anim(ui_ScreenSettings, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+    }
+}
+
+void setUIOrientation(int rotation) {
+    if (rotation >= 0 && rotation < 4) {
+        settings.setScreenOrientation(rotation);
+        settings.setChanged();
+    }
+}

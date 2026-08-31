@@ -188,6 +188,13 @@ void setup() {
     mqtt.begin();
 
     // Restore saved brightness on boot
+        static int lastOrientation = -1;
+        if (lastOrientation != -1 && settings.getScreenOrientation() != lastOrientation) {
+            Serial.printf("[System] Screen orientation changed. Rebooting...\n");
+            delay(500);
+            ESP.restart();
+        }
+        lastOrientation = settings.getScreenOrientation();
     if (!settings.getAutoBrightness()) {
         backlight.setManualBrightness(settings.getBrightness());
     }
@@ -274,6 +281,13 @@ void loop() {
             lastThemeFlavor = settings.getThemeFlavor();
             ui_set_theme(settings.getThemeFlavor());
         }
+        static int lastOrientation = -1;
+        if (lastOrientation != -1 && settings.getScreenOrientation() != lastOrientation) {
+            Serial.printf("[System] Screen orientation changed. Rebooting...\n");
+            delay(500);
+            ESP.restart();
+        }
+        lastOrientation = settings.getScreenOrientation();
         if (!settings.getAutoBrightness()) {
             backlight.setManualBrightness(settings.getBrightness());
         }
