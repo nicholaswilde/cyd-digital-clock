@@ -69,7 +69,24 @@ void timeSyncCallback(struct timeval *tv) {
     Serial.println("[System] NTP Time Synced.");
 }
 
+
+// --- Wi-Fi Event Handlers ---
+void onWiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
+    if (settings.getMqttEnabled()) {
+        Serial.println("[System] Wi-Fi connected with IP! Signaling MQTT Manager...");
+        mqtt.onNetworkAvailable();
+    } else {
+        Serial.println("[System] Wi-Fi connected with IP! MQTT is disabled, skipping connection.");
+    }
+}
+
+void onWiFiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info) {
+    Serial.println("[System] Wi-Fi disconnected! Signaling MQTT Manager...");
+    mqtt.onNetworkDisconnected();
+}
+
 void setup() {
+
     Serial.begin(115200);
     Serial.println("\n[System] Booting Digital Clock...");
 
@@ -102,8 +119,12 @@ void setup() {
     ui_init();
     ui_set_theme(settings.getThemeFlavor());
 
+
     // 5. Connect WiFi & Setup Time
+    WiFi.onEvent(onWiFiGotIP, ARDUINO_EVENT_WIFI_STA_GOT_IP);
+    WiFi.onEvent(onWiFiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     sntp_set_time_sync_notification_cb(timeSyncCallback);
+
     wifi.setCredentials(settings.getWifiSSID(), settings.getWifiPassword());
     if (settings.getWifiEnabled()) {
         wifi.begin();
@@ -204,7 +225,9 @@ void setup() {
             settings.setChanged();
         }
     });
+    mqtt.updateConfig(settings.getMqttServer(), settings.getMqttPort(), settings.getMqttUser(), settings.getMqttPassword(), settings.getMqttBaseTopic());
     mqtt.begin();
+
 
     // Restore saved brightness on boot
         static int lastOrientation = -1;

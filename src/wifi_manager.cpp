@@ -466,7 +466,16 @@ void WifiManager::handleRoot() {
     html += "<label for='ntp_server'>NTP Server</label>";
     html += "<input type='text' id='ntp_server' name='ntp_server' placeholder='e.g. pool.ntp.org' value='" + settings.getNtpServer() + "'>";
     
+
+    html += "<div class='section-title'>MQTT</div>";
+    
+    html += "<label style='display: flex; align-items: center; gap: 10px; cursor: pointer;'>";
+    html += "<input type='checkbox' name='mqtt_enabled' value='1'" + String(settings.getMqttEnabled() ? " checked" : "") + " style='width: auto; margin: 0;'>";
+    html += "Enable MQTT";
+    html += "</label>";
+    
     html += "<button type='submit'>Save & Connect</button>";
+
     html += "</form>";
     html += "<p style=\"margin-top: 25px; margin-bottom: 0; font-size: 13px; color: #6c7086; text-align: center;\">Built for " + String(DEVICE_NAME) + " | <a href=\"https://github.com/nicholaswilde/cyd-digital-clock\" target=\"_blank\" style=\"color: #89b4fa; text-decoration: none;\">GitHub</a></p>";
     html += "</div>";
@@ -504,6 +513,7 @@ void WifiManager::handleSave() {
     settings.setWifiPassword(pass);
     if (tz.length() > 0) settings.setTimezone(tz);
     if (ntpServer.length() > 0) settings.setNtpServer(ntpServer);
+    settings.setMqttEnabled(_webServer->hasArg("mqtt_enabled"));
 
     _webServer->send(200, "text/html", html);
     delay(1000);

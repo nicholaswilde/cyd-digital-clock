@@ -26,6 +26,7 @@ static lv_obj_t* ui_LedBrightnessSlider = nullptr;
 static lv_obj_t* ui_WifiIcon = nullptr;
 static lv_obj_t* ui_WifiModal = nullptr;
 static lv_obj_t* ui_SwitchWifiEnabled = nullptr;
+static lv_obj_t* ui_SwitchMqttEnabled = nullptr;
 static lv_obj_t* ui_SwitchRtc = nullptr;
 
 static lv_obj_t* ui_SliderHour = nullptr;
@@ -200,6 +201,13 @@ static void settings_back_event_cb(lv_event_t * e) {
     if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
         lv_scr_load_anim(ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 300, 0, false);
     }
+}
+
+
+static void switch_mqtt_enabled_event_cb(lv_event_t * e) {
+    lv_obj_t * sw = lv_event_get_target(e);
+    settings.setMqttEnabled(lv_obj_has_state(sw, LV_STATE_CHECKED));
+    settings.setChanged();
 }
 
 static void switch_wifi_enabled_event_cb(lv_event_t * e) {
@@ -534,7 +542,27 @@ void ui_init(void) {
     if (settings.getWifiEnabled()) lv_obj_add_state(ui_SwitchWifiEnabled, LV_STATE_CHECKED);
     lv_obj_add_event_cb(ui_SwitchWifiEnabled, switch_wifi_enabled_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-    // 0c. Enable Hardware RTC
+    // 0c. Enable MQTT
+    lv_obj_t* row_mqtt_en = lv_obj_create(cont);
+    lv_obj_set_width(row_mqtt_en, lv_pct(90));
+    lv_obj_set_height(row_mqtt_en, LV_SIZE_CONTENT);
+    lv_obj_clear_flag(row_mqtt_en, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_all(row_mqtt_en, 5, 0);
+    lv_obj_set_style_bg_opa(row_mqtt_en, 0, 0);
+    lv_obj_set_style_border_width(row_mqtt_en, 0, 0);
+    lv_obj_set_layout(row_mqtt_en, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(row_mqtt_en, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row_mqtt_en, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    
+    lv_obj_t* label_mqtt_en = lv_label_create(row_mqtt_en);
+    lv_label_set_text(label_mqtt_en, "Enable MQTT");
+    lv_obj_set_style_text_color(label_mqtt_en, lv_color_hex(current_colors.text), 0);
+    
+    ui_SwitchMqttEnabled = lv_switch_create(row_mqtt_en);
+    if (settings.getMqttEnabled()) lv_obj_add_state(ui_SwitchMqttEnabled, LV_STATE_CHECKED);
+    lv_obj_add_event_cb(ui_SwitchMqttEnabled, switch_mqtt_enabled_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    // 0d. Enable Hardware RTC
     lv_obj_t* row_rtc_en = lv_obj_create(cont);
     lv_obj_set_width(row_rtc_en, lv_pct(90));
     lv_obj_set_height(row_rtc_en, LV_SIZE_CONTENT);
@@ -761,6 +789,13 @@ void ui_sync_toggles(void) {
         if (ui_checked != settings.getUseRtc()) {
             if (settings.getUseRtc()) lv_obj_add_state(ui_SwitchRtc, LV_STATE_CHECKED);
             else lv_obj_clear_state(ui_SwitchRtc, LV_STATE_CHECKED);
+        }
+    }
+    if (ui_SwitchMqttEnabled) {
+        bool ui_checked = lv_obj_has_state(ui_SwitchMqttEnabled, LV_STATE_CHECKED);
+        if (ui_checked != settings.getMqttEnabled()) {
+            if (settings.getMqttEnabled()) lv_obj_add_state(ui_SwitchMqttEnabled, LV_STATE_CHECKED);
+            else lv_obj_clear_state(ui_SwitchMqttEnabled, LV_STATE_CHECKED);
         }
     }
     if (ui_SwitchWifiEnabled) {
