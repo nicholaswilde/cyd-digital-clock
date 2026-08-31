@@ -173,6 +173,25 @@ void setup() {
             else if (payload == "Landscape Rev") orient = 3;
             settings.setScreenOrientation(orient);
             settings.setChanged();
+        } else if (topic.endsWith("command/reboot")) {
+            if (payload == "1" || payload == "true" || payload == "ON" || payload == "REBOOT") {
+                Serial.println("[System] Reboot command received from MQTT.");
+                ESP.restart();
+            }
+        } else if (topic.endsWith("command/screensaver")) {
+            bool en = (payload == "ON" || payload == "1" || payload == "true");
+            settings.setScreensaverEnabled(en);
+            settings.setChanged();
+        } else if (topic.endsWith("command/sleep_schedule")) {
+            bool en = (payload == "ON" || payload == "1" || payload == "true");
+            settings.setSleepScheduleEnabled(en);
+            settings.setChanged();
+        } else if (topic.endsWith("command/sleep_start")) {
+            settings.setSleepStartTime(payload);
+            settings.setChanged();
+        } else if (topic.endsWith("command/sleep_end")) {
+            settings.setSleepEndTime(payload);
+            settings.setChanged();
         } else if (topic.endsWith("command/auto_brightness")) {
             settings.setAutoBrightness(payload == "ON");
             settings.setChanged();
@@ -395,5 +414,9 @@ void loop() {
             case 3: orientStr = "Landscape Rev"; break;
         }
         mqtt.publish("settings/screen_orientation", orientStr.c_str(), true);
+        mqtt.publish("settings/screensaver", settings.getScreensaverEnabled() ? "ON" : "OFF", true);
+        mqtt.publish("settings/sleep_schedule", settings.getSleepScheduleEnabled() ? "ON" : "OFF", true);
+        mqtt.publish("settings/sleep_start", settings.getSleepStartTime().c_str(), true);
+        mqtt.publish("settings/sleep_end", settings.getSleepEndTime().c_str(), true);
     }
 }

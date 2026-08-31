@@ -107,14 +107,13 @@ void MqttManager::onMqttConnect(bool sessionPresent) {
     subscribe("command/sleep_end", 0);
     subscribe("command/theme", 0);
     subscribe("command/screen_orientation", 0);
-    subscribe("command/set_time", 0);
 }
 
 void MqttManager::publishHADiscovery() {
     String mac = WiFi.macAddress();
     mac.replace(":", "");
-    String deviceId = "cyd_weather_" + mac;
-    String deviceJson = "\"device\":{\"identifiers\":[\"" + deviceId + "\"],\"name\":\"CYD Weather Station " + mac.substring(mac.length() - 4) + "\",\"manufacturer\":\"Nicholas Wilde\",\"model\":\"CYD-28R/35C\"}";
+    String deviceId = "cyd_clock_" + mac;
+    String deviceJson = "\"device\":{\"identifiers\":[\"" + deviceId + "\"],\"name\":\"CYD Digital Clock " + mac.substring(mac.length() - 4) + "\",\"manufacturer\":\"Nicholas Wilde\",\"model\":\"CYD-28R/35C\"}";
     // Connection Status
     String connPayload = "{\"name\":\"Connection Status\",\"state_topic\":\"" + _baseTopic + "status\",\"payload_on\":\"online\",\"payload_off\":\"offline\",\"device_class\":\"connectivity\",\"unique_id\":\"" + deviceId + "_conn\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/binary_sensor/" + deviceId + "/connection/config").c_str(), 0, true, connPayload.c_str());
