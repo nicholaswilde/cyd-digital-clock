@@ -14,7 +14,7 @@ A beautiful, configurable real-time digital clock built for the **ESP32 Cheap Ye
 - **Real-Time Clock Display**:
   - Accurate, synchronized time display updated every second.
   - Automatic time synchronization via Network Time Protocol (NTP).
-  - Native POSIX timezone string support with automatic Daylight Saving Time (DST) calculations.
+  - Native IANA timezone string support with automatic Daylight Saving Time (DST) calculations.
   - Manual fallback time setting capability via the device UI or API.
   - Built-in RTC Drift Compensation software to maintain accuracy when offline.
   - **Hardware RTC Backup**: Full integration with I2C DS3231 modules for zero-network timekeeping.
@@ -211,7 +211,7 @@ Example JSON response:
   "show_seconds": true,
   "brightness": 80,
   "auto_brightness": true,
-  "timezone": "UTC0",
+  "timezone": "America/Los_Angeles",
   "theme_flavor": 1,
   "screenshot_server_enabled": false,
   "api_server_enabled": true,
@@ -304,27 +304,25 @@ When MQTT is enabled in settings, the device connects to your MQTT broker and ex
 
 ---
 
-### POSIX Timezone Configuration
+### IANA Timezone Configuration
 
-The CYD Digital Clock uses standard POSIX timezone strings to natively calculate Daylight Saving Time (DST) transitions without requiring bulky offline timezone databases.
+The CYD Digital Clock uses the `bxparks/AceTime` library for robust, offline timezone calculations using standard IANA timezone strings (e.g. `America/Los_Angeles`). This ensures full Daylight Saving Time (DST) transitions happen automatically.
 
-Common POSIX timezone examples:
+Common IANA timezone examples:
 
-| Region | Description | POSIX String |
+| Region | Description | IANA String |
 | :--- | :--- | :--- |
-| **UTC** | Coordinated Universal Time | `UTC0` |
-| **London** | GMT / British Summer Time | `GMT0BST,M3.5.0/1,M10.5.0` |
-| **Central Europe** | CET / CEST | `CET-1CEST,M3.5.0,M10.5.0/3` |
-| **Eastern Europe** | EET / EEST | `EET-2EEST,M3.5.0/3,M10.5.0/4` |
-| **US Eastern** | Eastern Time | `EST5EDT,M3.2.0,M11.1.0` |
-| **US Central** | Central Time | `CST6CDT,M3.2.0,M11.1.0` |
-| **US Mountain** | Mountain Time | `MST7MDT,M3.2.0,M11.1.0` |
-| **US Pacific** | Pacific Time | `PST8PDT,M3.2.0,M11.1.0` |
-| **US Alaska** | Alaska Time | `AKST9AKDT,M3.2.0,M11.1.0` |
-| **US Hawaii** | Hawaii Standard Time | `HST10` |
-| **AU Eastern** | Sydney, Melbourne | `AEST-10AEDT,M10.1.0,M4.1.0/3` |
-| **AU Central** | Adelaide, Darwin | `ACST-9:30ACDT,M10.1.0,M4.1.0/3` |
-| **AU Western** | Perth | `AWST-8` |
+| **UTC** | Coordinated Universal Time | `UTC` |
+| **London** | GMT / British Summer Time | `Europe/London` |
+| **Central Europe** | CET / CEST | `Europe/Paris` |
+| **Eastern Europe** | EET / EEST | `Europe/Kiev` |
+| **US Eastern** | Eastern Time | `America/New_York` |
+| **US Central** | Central Time | `America/Chicago` |
+| **US Mountain** | Mountain Time | `America/Denver` |
+| **US Pacific** | Pacific Time | `America/Los_Angeles` |
+| **Sydney** | AEST / AEDT | `Australia/Sydney` |
+
+To find the exact IANA string for your region, refer to the [tz database time zones list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
 ---
 

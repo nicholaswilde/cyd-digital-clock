@@ -16,6 +16,7 @@ lv_obj_t* ui_ScreenMain;
 lv_obj_t* ui_LabelTime;
 lv_obj_t* ui_ScreenSettings;
 
+static lv_obj_t* ui_TimezoneDropdown = nullptr;
 static lv_obj_t* ui_SwitchAutoBrightness = nullptr;
 static lv_obj_t* ui_Switch24Hour = nullptr;
 static lv_obj_t* ui_SwitchShowSeconds = nullptr;
@@ -48,6 +49,18 @@ static void theme_dropdown_event_cb(lv_event_t * e) {
     }
 }
 
+static void timezone_dropdown_event_cb(lv_event_t * e) {
+    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t * dropdown = lv_event_get_target(e);
+        uint16_t opt = lv_dropdown_get_selected(dropdown);
+        const char* tz_opts[] = {"UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Asia/Shanghai", "Australia/Sydney"};
+        if (opt < 12) {
+            settings.setTimezone(tz_opts[opt]);
+            settings.setChanged();
+        }
+    }
+}
+
 void ui_set_theme(int theme_id) {
     current_colors = getCatppuccinFlavor(theme_id);
     
@@ -67,6 +80,7 @@ void ui_set_theme(int theme_id) {
     ui_WifiModal = nullptr;
     ui_LabelTime = nullptr;
 
+    ui_TimezoneDropdown = nullptr;
     ui_SwitchAutoBrightness = nullptr;
     ui_Switch24Hour = nullptr;
     ui_SwitchShowSeconds = nullptr;
@@ -419,6 +433,39 @@ void ui_init(void) {
     lv_obj_set_style_text_color(theme_dropdown, lv_color_16(current_colors.text), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(theme_dropdown, lv_color_16(current_colors.overlay0), LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    // 0c. Timezone
+    lv_obj_t* row0c = lv_obj_create(cont);
+    lv_obj_set_width(row0c, lv_pct(90));
+    lv_obj_set_height(row0c, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(row0c, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(row0c, 0, LV_PART_MAIN);
+    lv_obj_set_flex_flow(row0c, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row0c, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* label_tz = lv_label_create(row0c);
+    lv_label_set_text(label_tz, "Timezone");
+    lv_obj_set_style_text_color(label_tz, lv_color_16(current_colors.text), LV_PART_MAIN);
+
+    ui_TimezoneDropdown = lv_dropdown_create(row0c);
+    lv_dropdown_set_options(ui_TimezoneDropdown, "UTC\nAmerica/New_York\nAmerica/Chicago\nAmerica/Denver\nAmerica/Los_Angeles\nAmerica/Anchorage\nPacific/Honolulu\nEurope/London\nEurope/Paris\nAsia/Tokyo\nAsia/Shanghai\nAustralia/Sydney");
+    
+    // Find matching timezone index or default to 0
+    uint16_t tz_idx = 0;
+    const char* cur_tz = settings.getTimezone().c_str();
+    const char* tz_opts[] = {"UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Asia/Shanghai", "Australia/Sydney"};
+    for (int i=0; i<12; i++) {
+        if (strcmp(cur_tz, tz_opts[i]) == 0) {
+            tz_idx = i;
+            break;
+        }
+    }
+    lv_dropdown_set_selected(ui_TimezoneDropdown, tz_idx);
+    lv_obj_add_event_cb(ui_TimezoneDropdown, timezone_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_width(ui_TimezoneDropdown, 160);
+    lv_obj_set_style_bg_color(ui_TimezoneDropdown, lv_color_16(current_colors.crust), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(ui_TimezoneDropdown, lv_color_16(current_colors.text), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_TimezoneDropdown, lv_color_16(current_colors.overlay0), LV_PART_MAIN | LV_STATE_DEFAULT);
+
     // 1. 24 Hour Format
     lv_obj_t* row1 = lv_obj_create(cont);
     lv_obj_set_width(row1, lv_pct(90));
@@ -695,6 +742,20 @@ void ui_update(void) {
 }
 
 void ui_sync_toggles(void) {
+    if (ui_TimezoneDropdown) {
+        uint16_t tz_idx = 0;
+        const char* cur_tz = settings.getTimezone().c_str();
+        const char* tz_opts[] = {"UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Asia/Shanghai", "Australia/Sydney"};
+        for (int i=0; i<12; i++) {
+            if (strcmp(cur_tz, tz_opts[i]) == 0) {
+                tz_idx = i;
+                break;
+            }
+        }
+        if (lv_dropdown_get_selected(ui_TimezoneDropdown) != tz_idx) {
+            lv_dropdown_set_selected(ui_TimezoneDropdown, tz_idx);
+        }
+    }
     if (ui_SwitchRtc) {
         bool ui_checked = lv_obj_has_state(ui_SwitchRtc, LV_STATE_CHECKED);
         if (ui_checked != settings.getUseRtc()) {

@@ -102,8 +102,8 @@ button:hover { background: #f5c2e7; }
 
 <div class='section-title'>Time & Date</div>
 
-<label for='tz' title='POSIX timezone string for accurate local time'>Timezone (<a href='https://gist.github.com/alwynallan/24d96091655391107939' target='_blank' style='color: #89b4fa; text-decoration: none;'>POSIX format</a>)</label>
-<input type='text' id='tz' name='tz' value='%TZ%'>
+<label for='tz' title='IANA timezone string for accurate local time'>Timezone (<a href='https://en.wikipedia.org/wiki/List_of_tz_database_time_zones' target='_blank' style='color: #89b4fa; text-decoration: none;'>IANA format</a>)</label>
+<input type='text' id='tz' name='tz' placeholder='e.g. America/Los_Angeles' value='%TZ%'>
 
 <label for='ntp_server' title='Network Time Protocol server for time synchronization'>NTP Server</label>
 <input type='text' id='ntp_server' name='ntp_server' value='%NTP_SERVER%'>

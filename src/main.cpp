@@ -14,7 +14,16 @@
 #include "include/sd_card_manager.h"
 #include "include/rtc_manager.h"
 #include <time.h>
+#include <AceTime.h>
 
+using namespace ace_time;
+
+static ExtendedZoneProcessorCache<1> zoneProcessorCache;
+static ExtendedZoneManager zoneManager(
+  zonedbx::kZoneRegistrySize,
+  zonedbx::kZoneRegistry,
+  zoneProcessorCache
+);
 SettingsManager settings;
 WifiManager wifi(WIFI_SSID, WIFI_PASSWORD);
 MqttManager mqtt("", 1883, "", "", "");
@@ -106,7 +115,7 @@ void setup() {
     }
     
     // Sync time using NTP with POSIX Timezone
-    configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
+    configTime(0, 0, settings.getNtpServer().c_str());
 
     // Initialize to 12:00 locally if clock hasn't been set
     time_t now;
@@ -131,6 +140,9 @@ void setup() {
             settings.setChanged();
         } else if (topic.endsWith("command/show_seconds")) {
             settings.setShowSeconds(payload == "ON" || payload == "1");
+            settings.setChanged();
+        } else if (topic.endsWith("command/timezone")) {
+            settings.setTimezone(payload);
             settings.setChanged();
         } else if (topic.endsWith("command/wifi_enabled")) {
             settings.setWifiEnabled(payload == "ON" || payload == "1");
@@ -184,20 +196,28 @@ void setup() {
 }
 
 void updateTimeUI() {
-    struct tm timeinfo;
-    if (getLocalTime(&timeinfo, 10)) {
-        char timeStr[12]; // HH:MM:SS AM\0
+    time_t now;
+    time(&now);
+    if (now > 100000) {
+        TimeZone tz = zoneManager.createForZoneName(settings.getTimezone().c_str());
+        auto zdt = ZonedDateTime::forUnixSeconds64(now, tz);
+        if (zdt.isError()) return;
+
+        char timeStr[12];
         if (settings.getUse24HourFormat()) {
             if (settings.getShowSeconds()) {
-                strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeinfo);
+                snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d", zdt.hour(), zdt.minute(), zdt.second());
             } else {
-                strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+                snprintf(timeStr, sizeof(timeStr), "%02d:%02d", zdt.hour(), zdt.minute());
             }
         } else {
+            int h = zdt.hour() % 12;
+            if (h == 0) h = 12;
+            const char* ampm = zdt.hour() < 12 ? "AM" : "PM";
             if (settings.getShowSeconds()) {
-                strftime(timeStr, sizeof(timeStr), "%I:%M:%S %p", &timeinfo);
+                snprintf(timeStr, sizeof(timeStr), "%d:%02d:%02d %s", h, zdt.minute(), zdt.second(), ampm);
             } else {
-                strftime(timeStr, sizeof(timeStr), "%I:%M %p", &timeinfo);
+                snprintf(timeStr, sizeof(timeStr), "%d:%02d %s", h, zdt.minute(), ampm);
             }
         }
         ui_update_time(timeStr);
@@ -261,7 +281,7 @@ void loop() {
         led.setBrightness(settings.getLedBrightness());
         
         // Re-configure NTP timezone if it changed
-        configTzTime(settings.getTimezone().c_str(), settings.getNtpServer().c_str());
+        configTime(0, 0, settings.getNtpServer().c_str());
         
         // If RTC was just enabled, initialise hardware and immediately sync to system time
         if (settings.getUseRtc()) {
@@ -340,6 +360,7 @@ void loop() {
         mqtt.publish("settings/show_seconds", settings.getShowSeconds() ? "ON" : "OFF", true);
         mqtt.publish("settings/wifi_enabled", settings.getWifiEnabled() ? "ON" : "OFF", true);
         mqtt.publish("settings/use_rtc", settings.getUseRtc() ? "ON" : "OFF", true);
+        mqtt.publish("settings/timezone", settings.getTimezone().c_str(), true);
         mqtt.publish("settings/led_enabled", settings.getLedEnabled() ? "ON" : "OFF", true);
         mqtt.publish("settings/led_brightness", String((settings.getLedBrightness() * 100) / 255).c_str(), true);
         mqtt.publish("settings/auto_brightness", settings.getAutoBrightness() ? "ON" : "OFF", true);

@@ -52,7 +52,7 @@ void test_settings_save_and_load(void) {
     settings.setShowSeconds(false);
     settings.setBrightness(50);
     settings.setAutoBrightness(true);
-    settings.setTimezone("EST5EDT,M3.2.0,M11.1.0");
+    settings.setTimezone("America/New_York");
     settings.setScreenshotServerEnabled(false);
     settings.setScreenOrientation(2);
     settings.setMqttEnabled(false);
@@ -76,7 +76,7 @@ void test_settings_save_and_load(void) {
     TEST_ASSERT_EQUAL(CATPPUCCIN_LATTE, settings_new.getThemeFlavor());
     TEST_ASSERT_EQUAL(50, settings_new.getBrightness());
     TEST_ASSERT_EQUAL(true, settings_new.getAutoBrightness());
-    TEST_ASSERT_EQUAL_STRING("EST5EDT,M3.2.0,M11.1.0", settings_new.getTimezone().c_str());
+    TEST_ASSERT_EQUAL_STRING("America/New_York", settings_new.getTimezone().c_str());
     TEST_ASSERT_EQUAL(false, settings_new.getScreenshotServerEnabled());
     TEST_ASSERT_EQUAL(2, settings_new.getScreenOrientation());
     TEST_ASSERT_EQUAL(false, settings_new.getMqttEnabled());

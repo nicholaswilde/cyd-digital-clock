@@ -460,8 +460,8 @@ void WifiManager::handleRoot() {
     
     html += "<div class='section-title'>Time & Date</div>";
     
-    html += "<label for='tz'>Timezone (<a href='https://gist.github.com/alwynallan/24d96091655391107939' target='_blank' style='color: #89b4fa; text-decoration: none;'>POSIX format</a>)</label>";
-    html += "<input type='text' id='tz' name='tz' placeholder='e.g. PST8PDT,M3.2.0,M11.1.0' value='" + settings.getTimezone() + "'>";
+    html += "<label for='tz'>Timezone (<a href='https://en.wikipedia.org/wiki/List_of_tz_database_time_zones' target='_blank' style='color: #89b4fa; text-decoration: none;'>IANA format</a>)</label>";
+    html += "<input type='text' id='tz' name='tz' placeholder='e.g. America/Los_Angeles' value='" + settings.getTimezone() + "'>";
     
     html += "<label for='ntp_server'>NTP Server</label>";
     html += "<input type='text' id='ntp_server' name='ntp_server' placeholder='e.g. pool.ntp.org' value='" + settings.getNtpServer() + "'>";

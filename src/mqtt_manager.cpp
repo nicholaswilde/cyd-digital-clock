@@ -100,6 +100,7 @@ void MqttManager::onMqttConnect(bool sessionPresent) {
     subscribe("command/auto_brightness", 0);
     subscribe("command/use_24hr_format", 0);
     subscribe("command/show_seconds", 0);
+    subscribe("command/timezone", 0);
     subscribe("command/screensaver", 0);
     subscribe("command/sleep_schedule", 0);
     subscribe("command/sleep_start", 0);
@@ -168,6 +169,10 @@ void MqttManager::publishHADiscovery() {
     // Show Seconds (Switch)
     String showSecPayload = "{\"name\":\"Show Seconds\",\"state_topic\":\"" + _baseTopic + "settings/show_seconds\",\"command_topic\":\"" + _baseTopic + "command/show_seconds\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_show_seconds\"," + deviceJson + "}";
     _mqttClient.publish(("homeassistant/switch/" + deviceId + "/show_seconds/config").c_str(), 0, true, showSecPayload.c_str());
+
+    // Timezone (Text)
+    String tzPayload = "{\"name\":\"Timezone\",\"state_topic\":\"" + _baseTopic + "settings/timezone\",\"command_topic\":\"" + _baseTopic + "command/timezone\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_timezone\"," + deviceJson + "}";
+    _mqttClient.publish(("homeassistant/text/" + deviceId + "/timezone/config").c_str(), 0, true, tzPayload.c_str());
 
     // WiFi Enabled (Switch)
     String wifiEnPayload = "{\"name\":\"WiFi Enabled\",\"state_topic\":\"" + _baseTopic + "settings/wifi_enabled\",\"command_topic\":\"" + _baseTopic + "command/wifi_enabled\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"entity_category\":\"config\",\"unique_id\":\"" + deviceId + "_wifi_enabled\"," + deviceJson + "}";
